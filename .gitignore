@@ -1,0 +1,31 @@
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# .NET build output
+**/bin/
+**/obj/
+artifacts/
+
+# Test output and coverage
+TestResults/
+**/TestResults/
+*.coverage
+*.coveragexml
+coverage.*
+
+# Local tooling and temporary files
+.idea/
+.vscode/
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# OS metadata
+.DS_Store
+Thumbs.db
