@@ -86,3 +86,22 @@ Los logs conservan el mensaje de actualización de token del servicio de licenci
 - ¿Surge algún uso creativo no indicado y dan ganas de seguir experimentando? Registrar la situación concreta, también si la respuesta es negativa.
 
 Mantle es solo candidato de V2. No continuar a V2 ni Reactivity antes de recibir el playtest humano.
+
+## Human Playtest / Decision
+
+Playtest humano confirmado por Ramiro, 2026-09-08:
+
+- El movimiento general gusta y se siente fluido.
+- La V1 simplificada es suficiente para continuar; no se desea pulir más esta capa antes de avanzar.
+- La cápsula puede obstruir demasiado la vista al acercarse a colisiones.
+- El targeting actual no comunica suficientemente bien hacia dónde o qué se intenta afectar.
+- Se prefiere evitar un crosshair permanente tipo FPS. Targeting contextual/soft targeting (rango o cono, selección contextual e inspiración de action third-person) queda como candidato posterior.
+- Estas mejoras no son blockers. Movement, camera, targeting, traversal, animation y VFX pueden evolucionar con Nexus.
+
+Decisión formal:
+
+- **TECHNICAL VALIDATION: PASS**
+- **HUMAN EXPERIENTIAL VALIDATION: PASS FOR PROTOTYPE**
+- **STATUS: ACCEPTED TO CONTINUE**
+
+Esto acepta Feel 01 como prototipo experimental. Movement y power no se declaran production-ready. El siguiente experimento autorizado es Reactivity Spike 01; no se incorporan aquí sus sistemas.
