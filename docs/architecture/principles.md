@@ -31,10 +31,15 @@ Estas reglas gobiernan la evolución de Nexus. Una excepción exige evidencia, u
 - La fase secuencial es la referencia determinista. Commands y events cruzan fases mediante buffers de orden estable; no hay callbacks que muten la simulación a mitad de una iteración.
 - Los commands se aplican al final del tick en FIFO; los que se encolan durante esa fase esperan al tick siguiente. Los events publicados en un tick forman el lote visible durante el siguiente.
 - Un Job System futuro trabajará por batches. Nunca se lanzará `Task.Run` por entidad.
-- El ECS futuro se reservará para datos masivos y recorridos donde aporte una ventaja medida. Un Domain Model seguirá siendo preferible cuando exprese mejor reglas e invariantes.
+- El ECS se reserva para datos masivos y recorridos donde aporte una ventaja medida. Un Domain Model sigue siendo preferible cuando exprese mejor reglas e invariantes.
+- Una identidad de entidad combina slot y generación; reutilizar un slot nunca valida referencias de una generación anterior.
+- El layout físico de los componentes puede determinar el orden de query. Si cambia el futuro, también forma parte del state hash; el mismo conjunto lógico no implica un historial ni un layout equivalentes.
+- Cuando se requiere orden semántico por EntityId, se utiliza explícitamente la ruta ordenada y se asume el costo de ordenar; dense order nunca promete esa semántica.
+- Los componentes tienen esquemas semánticos estables y versionados y contribuyen sus campos explícitamente. La identidad runtime solo sirve para localizar stores y nunca decide el orden canónico.
+- Las referencias mutables de una query tienen alcance de callback. Cambios que alteren storage o lifecycle se difieren a una frontera sin queries activas.
 
 ## Rendimiento basado en evidencia
 
 - Se mide antes de optimizar y se mantiene una referencia correcta y reproducible.
-- SIMD, estructuras especializadas, paralelismo y niveles de fidelidad se incorporarán solo cuando el profiling lo justifique.
+- SIMD, estructuras especializadas, paralelismo y políticas automáticas de fidelidad se incorporarán solo cuando el profiling lo justifique.
 - C++ podrá entrar únicamente detrás de una frontera estrecha cuando el profiling demuestre que C#/.NET no satisface un subsistema crítico.

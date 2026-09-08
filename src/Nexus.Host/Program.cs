@@ -9,8 +9,13 @@ internal static class Program
     private const int DefaultTickRate = 60;
     private const ulong DefaultTickCount = 10_000UL;
 
-    public static int Main()
+    public static int Main(string[] args)
     {
+        if (args.Length > 0)
+        {
+            return EcsDemoConsole.Run(args);
+        }
+
         DeterminismReport runA = DemoSimulation.RunFresh(
             DefaultSeed,
             DefaultTickRate,

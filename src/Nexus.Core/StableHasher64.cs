@@ -30,6 +30,11 @@ public sealed class StableHasher64
     /// </summary>
     public ulong Value => _value;
 
+    /// <summary>
+    /// Starts another independent digest without allocating another hasher.
+    /// </summary>
+    public void Reset() => _value = Fnv1a64.OffsetBasis;
+
     public void Add(bool value)
     {
         AddTag(BooleanTag);

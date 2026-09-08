@@ -5,6 +5,7 @@
     <ProjectReference Include="..\Nexus.Contracts\Nexus.Contracts.csproj" />
     <ProjectReference Include="..\Nexus.Simulation\Nexus.Simulation.csproj" />
     <ProjectReference Include="..\Nexus.Diagnostics\Nexus.Diagnostics.csproj" />
+    <ProjectReference Include="..\Nexus.ECS\Nexus.ECS.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

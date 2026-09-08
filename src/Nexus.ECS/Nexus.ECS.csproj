@@ -1,0 +1,7 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="..\Nexus.Core\Nexus.Core.csproj" />
+    <ProjectReference Include="..\Nexus.Contracts\Nexus.Contracts.csproj" />
+    <InternalsVisibleTo Include="Nexus.ECS.Tests" />
+  </ItemGroup>
+</Project>
