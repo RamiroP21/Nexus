@@ -1,0 +1,11 @@
+{
+  "name": "Nexus.Unity.Foundation.EditorTests",
+  "rootNamespace": "Nexus.Unity.Tests",
+  "references": [
+    "Unity.InputSystem",
+    "Unity.RenderPipelines.Core.Runtime",
+    "Unity.RenderPipelines.Universal.Runtime"
+  ],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}

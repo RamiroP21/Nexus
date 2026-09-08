@@ -1,5 +1,7 @@
 # Unity Preflight 00
 
+> Registro histórico del preflight. Foundation 01 creó posteriormente el proyecto oficial en `client/Nexus.Unity`; ver [configuración, alcance y validación reproducible](../../client/Nexus.Unity/README.md). Las referencias siguientes a proyecto pendiente describen el estado de este preflight, no el estado posterior.
+
 Inspección: 2026-09-08, `main` limpia sobre `a0ab727b9dc08186552c3faf906346cd77e669f4`, coincidente con origin. Presupuesto aproximado: seis minutos, sin subagentes. Resultado: decisiones y brief preparados; proyecto oficial pendiente, no validado.
 
 ## Entorno y decisiones provisionales

@@ -29,3 +29,25 @@ coverage.*
 # OS metadata
 .DS_Store
 Thumbs.db
+
+# Unity client: generated state only; Assets, Packages and ProjectSettings are sources.
+/client/Nexus.Unity/[Ll]ibrary/
+/client/Nexus.Unity/[Tt]emp/
+/client/Nexus.Unity/[Ll]ogs/
+/client/Nexus.Unity/[Oo]bj/
+/client/Nexus.Unity/[Uu]ser[Ss]ettings/
+/client/Nexus.Unity/[Bb]uild/
+/client/Nexus.Unity/[Bb]uilds/
+/client/Nexus.Unity/[Mm]emoryCaptures/
+/client/Nexus.Unity/[Rr]ecordings/
+/client/Nexus.Unity/*.csproj
+/client/Nexus.Unity/*.sln
+/client/Nexus.Unity/*.slnx
+/client/Nexus.Unity/*.pidb
+/client/Nexus.Unity/*.unityproj
+/client/Nexus.Unity/*.opendb
+/client/Nexus.Unity/*.VC.db
+/client/Nexus.Unity/sysinfo.txt
+/client/Nexus.Unity/*.dmp
+/client/Nexus.Unity/*.stackdump
+/client/Nexus.Unity/crash-report*/
