@@ -20,11 +20,9 @@ namespace Nexus.Unity.Tests
         private const string InputPath = "Assets/Nexus/Input/NexusInput.inputactions";
 
         [Test]
-        public void BootstrapIsTheOnlyBuildSceneAndHasNoMissingScripts()
+        public void BootstrapRemainsAnEnabledBuildSceneAndHasNoMissingScripts()
         {
-            Assert.That(EditorBuildSettings.scenes.Length, Is.EqualTo(1));
-            Assert.That(EditorBuildSettings.scenes[0].path, Is.EqualTo(ScenePath));
-            Assert.That(EditorBuildSettings.scenes[0].enabled, Is.True);
+            Assert.That(EditorBuildSettings.scenes.Count(scene => scene.path == ScenePath && scene.enabled), Is.EqualTo(1));
             var scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
             AssertScene(scene);
         }

@@ -1,0 +1,5 @@
+{
+  "name": "Nexus.Feel01",
+  "rootNamespace": "Nexus.Feel01",
+  "references": ["Unity.InputSystem"]
+}
