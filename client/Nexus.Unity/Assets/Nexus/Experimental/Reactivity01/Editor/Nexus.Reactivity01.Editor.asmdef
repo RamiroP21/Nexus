@@ -1,0 +1,5 @@
+{
+  "name": "Nexus.Reactivity01.Editor",
+  "references": ["Nexus.Reactivity01", "Nexus.Feel01"],
+  "includePlatforms": ["Editor"]
+}

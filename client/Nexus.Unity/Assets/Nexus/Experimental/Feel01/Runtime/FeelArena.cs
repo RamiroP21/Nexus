@@ -6,9 +6,11 @@ namespace Nexus.Feel01
     {
         [SerializeField] private FeelPlayer player;
         [SerializeField] private Rigidbody[] props;
+        [SerializeField] private string experimentTitle = "KINETIC VECTOR / FEEL 01";
         private Vector3[] positions;
         private Quaternion[] rotations;
         private GUIStyle title, text;
+        public event System.Action ResetPerformed;
 
         private void Awake()
         {
@@ -29,6 +31,7 @@ namespace Nexus.Feel01
         {
             for (int i = 0; i < props.Length; i++) ResetProp(i);
             player.Respawn();
+            ResetPerformed?.Invoke();
             player.SetPaused(false);
         }
 
@@ -45,7 +48,7 @@ namespace Nexus.Feel01
             title ??= new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
             text ??= new GUIStyle(GUI.skin.label) { fontSize = 15, wordWrap = true };
             GUI.Box(new Rect(12, 12, 410, 88), GUIContent.none);
-            GUI.Label(new Rect(24, 18, 390, 28), "KINETIC VECTOR / FEEL 01", title);
+            GUI.Label(new Rect(24, 18, 390, 28), experimentTitle, title);
             GUI.Label(new Rect(24, 49, 390, 48), "Move · Look · Jump · Sprint · PrimaryPower\nEsc / Start: pause, controls and reset", text);
             if (!player.Paused) return;
             float x = Screen.width / 2f - 230, y = Screen.height / 2f - 140;

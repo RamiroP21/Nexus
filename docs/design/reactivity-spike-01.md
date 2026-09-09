@@ -1,5 +1,7 @@
 # Reactivity Spike 01 — Kinetic Reaction
 
+> Brief original de preparación. La misión posterior Reactivity 01 / V1 autorizó su implementación el 2026-09-09. Ver [escena, alcance ejecutado y findings](reactivity-findings.md). La valoración experiencial de Reactivity continúa pendiente de playtest humano; no autoriza Triage.
+
 ## Pregunta
 
 ¿Un mundo que reacciona inmediatamente a las acciones y al poder del jugador hace que Kinetic Vector resulte más interesante?

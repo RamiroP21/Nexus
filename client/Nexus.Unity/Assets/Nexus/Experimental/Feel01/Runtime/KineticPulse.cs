@@ -21,6 +21,8 @@ namespace Nexus.Feel01
         public Rigidbody LastBody { get; private set; }
         public Vector3 LastImpulse { get; private set; }
         public Vector3 LastPoint { get; private set; }
+        // Optional local observers; Feel 01 has none and retains its existing behavior.
+        public event System.Action<Vector3, float, Rigidbody> Impact;
 
         private void Awake()
         {
@@ -69,6 +71,7 @@ namespace Nexus.Feel01
             beam.SetPosition(1, endPoint);
             beam.enabled = true;
             sound.PlayOneShot(pulseSound);
+            if (hit) Impact?.Invoke(endPoint, settings.impulse, LastBody);
             return true;
         }
 

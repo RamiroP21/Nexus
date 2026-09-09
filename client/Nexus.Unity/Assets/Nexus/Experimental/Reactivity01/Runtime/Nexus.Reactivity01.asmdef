@@ -1,0 +1,5 @@
+{
+  "name": "Nexus.Reactivity01",
+  "rootNamespace": "Nexus.Reactivity01",
+  "references": ["Nexus.Feel01"]
+}

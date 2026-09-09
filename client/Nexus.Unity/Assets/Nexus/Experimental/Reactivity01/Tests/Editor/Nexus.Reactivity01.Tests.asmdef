@@ -1,0 +1,6 @@
+{
+  "name": "Nexus.Reactivity01.Tests",
+  "references": ["Nexus.Reactivity01", "Nexus.Feel01", "Unity.InputSystem", "Unity.RenderPipelines.Core.Runtime"],
+  "includePlatforms": ["Editor"],
+  "optionalUnityReferences": ["TestAssemblies"]
+}
