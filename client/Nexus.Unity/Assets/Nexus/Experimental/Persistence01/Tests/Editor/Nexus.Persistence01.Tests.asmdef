@@ -1,0 +1,1 @@
+{"name":"Nexus.Persistence01.Tests","references":["Nexus.Persistence01","Nexus.Feel01","Nexus.Reactivity01","Nexus.Triage01","Unity.InputSystem","Unity.RenderPipelines.Core.Runtime"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}

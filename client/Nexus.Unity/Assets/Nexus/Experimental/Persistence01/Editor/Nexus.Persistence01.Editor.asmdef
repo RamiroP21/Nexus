@@ -1,0 +1,1 @@
+{"name":"Nexus.Persistence01.Editor","references":["Nexus.Persistence01","Nexus.Feel01","Nexus.Reactivity01","Nexus.Triage01"],"includePlatforms":["Editor"]}
