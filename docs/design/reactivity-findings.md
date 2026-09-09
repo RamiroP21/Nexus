@@ -1,6 +1,6 @@
 # Reactivity Spike 01 — V1
 
-**EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+**EXPERIENTIAL VALIDATION: PASS FOR PROTOTYPE**
 
 Fecha: 2026-09-09. Baseline: `662544835ca89eeafb6301123cd7cbe1d7a55568`, `main` limpia y publicada. Unity 6000.3.2f1 / URP existentes. Esta misión autoriza solo Reactivity V1; no Triage, persistencia ni integración con el kernel .NET.
 
@@ -82,7 +82,21 @@ Corrección acotada: Reactivity consulta la posición del Rigidbody para percepc
 
 Cierre completo de regresión: **13/13 tests pasaron, 0 fallos, 0 omitidos, salida 0** (`artifacts/reactivity01/final.xml` y `final.log`). La última ejecución incluye emisión automática de Threat por el enemigo al acercarse al civil, además de impactos directos/adyacentes, umbrales, distancia, huida, recuperación, pausa/reset, movimiento/cámara y diferencias de masa. Se revisaron las capturas finales de amenaza, recuperación y cadena. No se observaron NaN, física explosiva, referencias rotas ni exceptions en estos recorridos.
 
-**TECHNICAL VALIDATION: PASS FOR PROTOTYPE**. Tres pasadas jugables de Reactivity (la segunda incluyó regresión completa), un diagnóstico dirigido del reset y una regresión final completa. No se declara calidad experiencial ni cobertura exhaustiva de todas las configuraciones físicas.
+**TECHNICAL VALIDATION: PASS**. Tres pasadas jugables de Reactivity (la segunda incluyó regresión completa), un diagnóstico dirigido del reset y una regresión final completa. No se declara cobertura exhaustiva de todas las configuraciones físicas.
+
+## Human Playtest / Decision
+
+Feedback confirmado por Ramiro:
+
+> “Las reacciones se entienden y hacen que el mundo resulte más interesante; esto alcanza para seguir.”
+
+Decisión formal:
+
+- **TECHNICAL VALIDATION: PASS**
+- **HUMAN EXPERIENTIAL VALIDATION: PASS FOR PROTOTYPE**
+- **STATUS: ACCEPTED TO CONTINUE**
+
+Reactivity queda aceptada como prototipo experimental. No es production-ready y no se inicia Reactivity V2. Se mantienen como deuda no bloqueante la oclusión cuando se alinean varios cuerpos, el targeting aún básico, el arte/animaciones/VFX provisionales, el mando físico no probado y el Windows player no probado.
 
 Console: sin errores C# ni errores runtime del experimento. El log conserva mensajes conocidos del entorno: actualización de token de licencia no disponible (el entitlement permite ejecutar), búsqueda de extensiones nativas y dependencias AddPass/BaseMapGen de plantillas Terrain de URP/ShaderGraph. Son avisos ajenos a los materiales utilizados; no hay Terrain en esta escena ni materiales magenta observados. No se ocultaron ni resolvieron cambiando paquetes.
 
@@ -109,4 +123,4 @@ Límites deliberados: percepción radial sin oclusión, steering local sin garan
 5. ¿Las reacciones hacen que mires alrededor antes de disparar? ¿Resulta más interesante que Feel01?
 6. ¿El targeting actual impide evaluar estas reacciones, o puede seguir esperando?
 
-**EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**. No avanzar a Triage sin feedback humano.
+La siguiente experiencia autorizada es Triage Spike 01; su definición está en [triage-spike-01.md](triage-spike-01.md). No se implementa Triage dentro de este cierre.
