@@ -2,7 +2,8 @@
 
 TECHNICAL VALIDATION: PASS
 
-EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST
+HUMAN EXPERIENTIAL VALIDATION: PASS FOR PROTOTYPE
+STATUS: ACCEPTED TO CONTINUE
 
 ## Mission and boundaries
 
@@ -73,6 +74,21 @@ Main files: Triage scene and metadata; `Triage01/Runtime/TriageDirector.cs` and 
 Publication is scoped to this mission using `feat: add triage gameplay prototype`. The final response records the resulting SHA and verified remote state. Implementation and validation took approximately 20 minutes before publication; no Persistence work.
 
 ## Human playtest
+
+Playtest humano confirmado por Ramiro después de la validación técnica:
+
+- Ambas crisis se perciben suficientemente para probar el concepto.
+- Atender una consume tiempo mientras la otra progresa.
+- Las consecuencias de distintas prioridades son comprensibles.
+- El escenario hace evidente que ser poderoso no implica resolver todo perfectamente.
+- El jugador puede comparar prioridades y considerar otras estrategias.
+- Para este nivel de greybox, alcanza para continuar.
+
+Decisión formal: Triage 01 queda aceptado como prototipo experimental. No es production-ready y no se inicia Triage V2.
+
+En producción, la presión debe volverse mucho más diegética: personas, sonido, movimiento, VFX, entorno y comportamiento deben comunicar las crisis sin depender de labels grandes.
+
+Deudas no bloqueantes: legibilidad dependiente de señalización explícita/textos grandes; cámara/oclusiones; targeting básico; arte, sonido, animaciones y VFX provisionales; mando físico no probado; Windows player no probado.
 
 WASD / left stick move; mouse / right stick look; Space / South jump; Shift / L3 sprint; left mouse / RT Kinetic Vector; Esc / Start pause; jump while paused resets.
 
