@@ -85,6 +85,20 @@ New local runtime (`SliceIncident`, `SliceCargoContact`), scene authoring/menu, 
 
 Publication is scoped to `feat: integrate first nexus vertical slice` after diff/staging review. The final response records the resulting SHA, live remote and clean state. Approximately 20 minutes of implementation/validation; no experiential verdict or next-phase work.
 
+## Human playtest closure
+
+Ramiro's human playtest confirms that the integrated experience is sufficient to continue. The scene begins to function as a place rather than only as isolated test scenes, and the prototype-level integration of **Power → Reaction → Choice → Consequence → Memory** is sufficient. No Vertical Slice V2 is requested.
+
+The playtest exposed a non-blocking **DIEGETIC LEGIBILITY DEBT**: the orange cubes and volumes did not clearly communicate what they were or why they mattered. Although they represented cargo, props, damage or incident-linked objects internally, their function was not legible to the player. Future important objects must communicate through a combination of form, scale, context, location, movement, sound, reaction and material/VFX rather than relying on color alone.
+
+Decision:
+
+- **TECHNICAL VALIDATION: PASS**
+- **HUMAN EXPERIENTIAL VALIDATION: PASS FOR PROTOTYPE**
+- **STATUS: ACCEPTED TO CONTINUE**
+
+Vertical Slice 01 is not production-ready. The next question is no longer whether the systems can coexist. It is whether the validated identity can sustain an interesting continuous session in which the player explores, discovers situations, intervenes, accepts consequences and continues.
+
 Evidence is local and ignored: `artifacts/verticalslice01/` for XML/editor logs; `client/Nexus.Unity/Logs/VerticalSlice01/` for URP camera captures and strategy traces. Captures are rendered camera views, not Editor screenshots and do not include IMGUI. The matrix uses synthetic gamepad movement/RT and camera aiming with actual physics; it never teleports the player to perform an intervention. A fixed overview camera is used only for comparing the place.
 
 ## Human playtest
