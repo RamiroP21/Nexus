@@ -77,6 +77,14 @@ namespace Nexus.Feel01
 
         public void LandingFeedback(float speed) { landingUntil = Time.time + Mathf.Min(.25f, speed * .012f); }
 
+        // Explicit opt-in for experiments that reset while an impulse is still cooling down.
+        public void ResetPulse()
+        {
+            readyAt = flashUntil = landingUntil = 0;
+            ShotCount = 0; LastBody = null; LastImpulse = LastPoint = Vector3.zero;
+            hasTarget = false; targetName = null; beam.enabled = false; sound.Stop();
+        }
+
         private void Update()
         {
             beam.enabled = Time.time < flashUntil;
