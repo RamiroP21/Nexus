@@ -1,0 +1,1 @@
+{"name":"Nexus.VerticalSlice01.Tests","references":["Nexus.VerticalSlice01","Nexus.Feel01","Nexus.Reactivity01","Nexus.Persistence01","Unity.InputSystem","Unity.RenderPipelines.Core.Runtime"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}

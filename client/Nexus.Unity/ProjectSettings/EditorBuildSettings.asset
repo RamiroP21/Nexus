@@ -20,6 +20,9 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Nexus/Experimental/Persistence01.unity
     guid: 4607e06ee2565e646ba4cb0373fdadc8
+  - enabled: 1
+    path: Assets/Nexus/Experimental/VerticalSlice01.unity
+    guid: 2292b816541b32849b882caa059bf483
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 273915d2f91a6e04bbf2f2d851732ec1, type: 3}
   m_UseUCBPForAssetBundles: 0

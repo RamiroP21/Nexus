@@ -1,0 +1,1 @@
+{"name":"Nexus.VerticalSlice01.Editor","references":["Nexus.VerticalSlice01","Nexus.Feel01","Nexus.Reactivity01","Nexus.Persistence01"],"includePlatforms":["Editor"]}

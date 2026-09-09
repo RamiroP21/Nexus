@@ -9,6 +9,7 @@ namespace Nexus.Feel01
         [SerializeField] private FeelPlayer player;
         [SerializeField] private FeelCamera orbit;
         [SerializeField] private Transform muzzle;
+        [SerializeField] private bool contextualHud;
         private LineRenderer beam;
         private AudioSource sound;
         private AudioClip pulseSound;
@@ -96,13 +97,14 @@ namespace Nexus.Feel01
         private void OnGUI()
         {
             if (player.Paused) return;
+            if (contextualHud && !hasTarget && Time.time >= flashUntil && Time.time >= landingUntil) return;
             labelStyle ??= new GUIStyle(GUI.skin.label) { fontSize = 16, alignment = TextAnchor.MiddleCenter };
             float x = Screen.width * .5f, y = Screen.height * .5f;
             GUI.color = Time.time < flashUntil ? Color.white : hasTarget ? new Color(.3f, 1, .8f) : new Color(1, 1, 1, .8f);
             float size = Time.time < flashUntil ? 12 : 7;
             GUI.DrawTexture(new Rect(x - size, y - 1, size * 2, 2), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(x - 1, y - size, 2, size * 2), Texture2D.whiteTexture);
-            if (hasTarget) GUI.Label(new Rect(x - 140, y + 18, 280, 25), targetName, labelStyle);
+            if (hasTarget && !contextualHud) GUI.Label(new Rect(x - 140, y + 18, 280, 25), targetName, labelStyle);
             GUI.color = new Color(.3f, 1, .8f);
             float ready = Mathf.Clamp01(1 - (readyAt - Time.time) / settings.cooldown);
             GUI.DrawTexture(new Rect(x - 20, y + 12, 40 * ready, 2), Texture2D.whiteTexture);

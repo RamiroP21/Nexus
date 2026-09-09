@@ -7,6 +7,7 @@ namespace Nexus.Feel01
         [SerializeField] private FeelPlayer player;
         [SerializeField] private Rigidbody[] props;
         [SerializeField] private string experimentTitle = "KINETIC VECTOR / FEEL 01";
+        [SerializeField] private bool pauseOnlyHud;
         private Vector3[] positions;
         private Quaternion[] rotations;
         private GUIStyle title, text;
@@ -45,6 +46,7 @@ namespace Nexus.Feel01
 
         private void OnGUI()
         {
+            if (pauseOnlyHud && !player.Paused) return;
             title ??= new GUIStyle(GUI.skin.label) { fontSize = 22, fontStyle = FontStyle.Bold };
             text ??= new GUIStyle(GUI.skin.label) { fontSize = 15, wordWrap = true };
             GUI.Box(new Rect(12, 12, 410, 88), GUIContent.none);
