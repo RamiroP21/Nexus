@@ -73,3 +73,11 @@ Clear memory; open **Nexus → Persistence 01 → Open gameplay scene**; Play; p
 Controls remain WASD/mouse, Space jump, Shift sprint, left click power, Esc pause. Ask: do you recall your priority; recognize the trace without labels; feel that the place retains history; value the earlier decision more; want to compare the other result; imagine larger consequences? Does the world appear to remember what you did?
 
 Inherited debts: basic targeting/camera, provisional art/sound/animation/VFX, physical controller and Windows player untested. No claim of meaningful memory before Ramiro's playtest; no advance to Vertical Slice.
+
+## Closure decision — human validation and handoff
+
+Ramiro's bounded human playtest confirmed the prototype outcome: **PASS FOR PROTOTYPE**. The technical evidence above is also a **TECHNICAL PASS**. Persistence01 is therefore **ACCEPTED TO CONTINUE**, with the explicit decision to advance to the first vertical slice while keeping this implementation local and experimental.
+
+The validated experiential chain is: **Power → Reaction → Choice → Consequence → Memory**. The player uses power in a readable urban incident; the city reacts immediately; the player chooses which need to prioritize; the incompatible outcome changes the scene; and returning later makes that choice legible through persistent aftermath.
+
+Open debts are intentionally carried forward: improve the physical controller and camera, replace provisional art/sound/animation/VFX, test a Windows player build, and validate the broader slice with more than one human. Persistence01 does not become a general save system, and no later simulation or gameplay system is implied by this acceptance.
