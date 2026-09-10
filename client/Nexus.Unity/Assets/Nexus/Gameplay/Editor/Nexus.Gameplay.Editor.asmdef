@@ -1,0 +1,1 @@
+{"name":"Nexus.Gameplay.Editor","references":["Nexus.Gameplay","Unity.InputSystem"],"includePlatforms":["Editor"]}

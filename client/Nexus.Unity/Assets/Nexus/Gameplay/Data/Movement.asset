@@ -1,0 +1,28 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 9db288925aa3c6c46b4aecafb0bc9642, type: 3}
+  m_Name: Movement
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Character.MovementSettings
+  moveSpeed: 6
+  sprintSpeed: 10
+  acceleration: 28
+  braking: 30
+  gravity: 24
+  jumpHeight: 1.8
+  airControl: 0.35
+  terminalSpeed: 35
+  turnSharpness: 16
+  coyoteTime: 0.1
+  jumpBuffer: 0.12
+  groundImpulseDrag: 8
+  airImpulseDrag: 1
+  maximumImpulseSpeed: 14

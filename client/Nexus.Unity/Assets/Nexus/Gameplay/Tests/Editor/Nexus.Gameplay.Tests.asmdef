@@ -1,0 +1,1 @@
+{"name":"Nexus.Gameplay.Tests","references":["Nexus.Gameplay","Nexus.Gameplay.Editor","Unity.InputSystem","Unity.RenderPipelines.Core.Runtime"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}
