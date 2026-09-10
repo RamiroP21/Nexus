@@ -1,0 +1,1 @@
+{"name":"Nexus.SessionLoop01.Tests","references":["Nexus.SessionLoop01","Nexus.Feel01","Nexus.Reactivity01","Unity.InputSystem","Unity.RenderPipelines.Core.Runtime"],"includePlatforms":["Editor"],"optionalUnityReferences":["TestAssemblies"]}
