@@ -10,7 +10,7 @@ The owner accepted Gameplay Feel 01, Reactivity 01, Triage 01, Persistence 01, V
 - Evidence: inspect dependencies; Unity compilation and tests; seven technical Play Mode flows; camera renders; final scoped Git review.
 - Budget: no subagents, at most two major functional corrections and two visual correction rounds.
 - Stop: unsafe unrelated changes, major architectural redesign, non-convergent failures or exhausted correction budget. Publish only with technical PASS.
-- Done: required runtime, scene, tests, Play Mode, visual evidence and documented decisions; scoped commit/push verified. Human experiential validation remains pending.
+- Done: required runtime, scene, tests, Play Mode, visual evidence and documented decisions; scoped commit/push verified. Human experiential validation now requires the targeting rework described in [targeting-rework-01.md](targeting-rework-01.md).
 
 ## Promotion review
 
@@ -36,7 +36,9 @@ The camera has a configurable shoulder offset. Both that offset and the backward
 
 TECHNICAL VALIDATION: PASS
 
-EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST
+EXPERIENTIAL VALIDATION: REWORK REQUIRED — TARGETING
+
+The first human playtest rejected the current target-bound ring and its implied selection behavior. The production runtime remains technically validated, but the targeting experience is not accepted. See [targeting-rework-01.md](targeting-rework-01.md) for the scoped preparation and acceptance criteria. No runtime rework has been implemented yet.
 
 The first complete Unity run passed 33/37 tests: all 25 existing tests and eight new rules tests passed, while four new Play Mode tests correctly rejected missing prefab config references. Asset creation before a scene switch had left the prefab without its four ScriptableObject references. The correction established the scene first, added a missing-reference guard to authoring, repaired only those four prefab references and added explicit prefab-reference assertions. After this correction, the targeted production suite passed 13/13 (eight rules tests plus five actual Play Mode journeys, including indirect collision coverage). Logs/XML retain the failed first run rather than hiding it.
 
@@ -68,6 +70,6 @@ Reproduce Unity from the repository root using the installed Unity 6000.3.2f1 ex
 
 ## Use and explicit debt
 
-Open **Nexus → Production → Open Superhuman Playground**, then Play. WASD/mouse or gamepad sticks; Shift/left-stick press sprint; Space/south button jump; click/right trigger Kinetic Vector; Esc/Start pause/resume. A target-bound ring identifies the selected object. There is no experimental completion/reset loop; stop/re-enter Play for a fresh playground.
+Open **Nexus → Production → Open Superhuman Playground**, then Play. WASD/mouse or gamepad sticks; Shift/left-stick press sprint; Space/south button jump; click/right trigger Kinetic Vector; Esc/Start pause/resume. The current target-bound ring is retained only as the rejected baseline pending the rework; do not treat it as the accepted production UX. There is no experimental completion/reset loop; stop/re-enter Play for a fresh playground.
 
 Deferred: production animation and character model, advanced traversal, melee/ranged combat, enemies and NPC AI, VFX, sound, final targeting UX, progression, save integration, Nexus.Server and ECS integration. Current local Unity physics is not part of the deterministic headless contract. No Session Loop 01B or subsequent production mission is authorized by this implementation.
