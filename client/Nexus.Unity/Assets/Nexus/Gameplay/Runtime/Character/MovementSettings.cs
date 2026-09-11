@@ -12,6 +12,14 @@ namespace Nexus.Gameplay.Character
         [SerializeField, Range(0, .25f)] private float coyoteTime = .1f, jumpBuffer = .12f;
         [SerializeField, Min(0)] private float groundImpulseDrag = 8, airImpulseDrag = 1;
         [SerializeField, Min(.1f)] private float maximumImpulseSpeed = 14;
+        [SerializeField, Min(.1f)] private float vaultHeight = 1.1f, mantleHeight = 2.2f, traversalReach = 1.2f, traversalSpeed = 5;
+        [SerializeField, Min(.1f)] private float hardLandingSpeed = 13, landingRecovery = .25f;
+        public float VaultHeight => vaultHeight;
+        public float MantleHeight => mantleHeight;
+        public float TraversalReach => traversalReach;
+        public float TraversalSpeed => traversalSpeed;
+        public float HardLandingSpeed => hardLandingSpeed;
+        public float LandingRecovery => landingRecovery;
         public float MoveSpeed => moveSpeed;
         public float SprintSpeed => sprintSpeed;
         public float Acceleration => acceleration;
@@ -29,6 +37,8 @@ namespace Nexus.Gameplay.Character
         public bool IsValid => moveSpeed > 0 && sprintSpeed >= moveSpeed && acceleration > 0 && braking > 0
             && gravity > 0 && jumpHeight > 0 && terminalSpeed > 0 && turnSharpness > 0
             && airControl >= 0 && airControl <= 1 && coyoteTime >= 0 && jumpBuffer >= 0
-            && groundImpulseDrag >= 0 && airImpulseDrag >= 0 && maximumImpulseSpeed > 0;
+            && groundImpulseDrag >= 0 && airImpulseDrag >= 0 && maximumImpulseSpeed > 0
+            && vaultHeight > 0 && mantleHeight >= vaultHeight && traversalReach > 0 && traversalSpeed > 0
+            && hardLandingSpeed > 0 && landingRecovery > 0;
     }
 }

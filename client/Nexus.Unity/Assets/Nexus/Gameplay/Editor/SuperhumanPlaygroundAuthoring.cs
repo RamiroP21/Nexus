@@ -26,6 +26,57 @@ namespace Nexus.Gameplay.Editor
         public static void Open()
         { if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) EditorSceneManager.OpenScene(ScenePath); }
 
+        [MenuItem("Nexus/Production/Add Traversal and Combat Foundation")]
+        public static void AddTraversalCombat()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            if (scene.GetRootGameObjects().Any(g => g.name == "Traversal and combat foundation"))
+                throw new InvalidOperationException("Foundation exists; edit deliberately rather than duplicate fixtures.");
+            var prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                var prefabMotor = prefabRoot.GetComponentInChildren<CharacterMotor>();
+                if (!prefabMotor.GetComponent<DamageReceiver>()) prefabMotor.gameObject.AddComponent<DamageReceiver>();
+                if (!prefabMotor.GetComponent<PlayerVitality>()) prefabMotor.gameObject.AddComponent<PlayerVitality>();
+                PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
+            var player = Object.FindFirstObjectByType<PlayerVitality>();
+            if (!player) throw new InvalidOperationException("Player prefab did not update.");
+            var root = new GameObject("Traversal and combat foundation").transform;
+            var concrete = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Concrete.mat");
+            var accent = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Safety trim.mat");
+            var steel = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Steel.mat");
+            var shell = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Target shell.mat");
+            Box("Vault rail", new Vector3(7, .45f, -14), new Vector3(4, .9f, .35f), accent, root);
+            Box("Mantle ledge", new Vector3(15, .95f, -15), new Vector3(4, 1.9f, 3), concrete, root);
+            Box("Landing drop platform", new Vector3(17, 1.8f, -10), new Vector3(3, 3.6f, 3), steel, root);
+            var barrier = Box("Releasable combat cover", new Vector3(-4, 1.1f, 10), new Vector3(3, 2.2f, .3f), accent, root);
+            var barrierBody = barrier.AddComponent<Rigidbody>(); ConfigureBody(barrierBody, 4); barrierBody.constraints = RigidbodyConstraints.FreezeAll;
+            barrier.AddComponent<PhysicalTarget>(); barrier.AddComponent<ImpactBarrier>();
+            var projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere); projectile.name = "Training hazard template";
+            projectile.transform.SetParent(root); projectile.transform.localScale = Vector3.one * .55f;
+            projectile.GetComponent<Renderer>().sharedMaterial = accent;
+            var projectileBody = projectile.AddComponent<Rigidbody>(); ConfigureBody(projectileBody, 1); projectileBody.useGravity = false;
+            projectile.AddComponent<PhysicalTarget>(); var hazard = projectile.AddComponent<TrainingHazard>(); projectile.SetActive(false);
+            var sentinel = new GameObject("Training sentinel"); sentinel.transform.SetParent(root); sentinel.transform.position = new Vector3(-4, .05f, 15);
+            var shape = sentinel.AddComponent<CapsuleCollider>(); shape.center = Vector3.up; shape.height = 2; shape.radius = .45f;
+            var body = sentinel.AddComponent<Rigidbody>(); ConfigureBody(body, 8); body.constraints = RigidbodyConstraints.FreezeRotation;
+            sentinel.AddComponent<PhysicalTarget>(); sentinel.AddComponent<DamageReceiver>(); sentinel.AddComponent<CollisionDamage>();
+            var visual = Humanoid(sentinel.transform, shell, steel, accent); visual.localRotation = Quaternion.Euler(0, 180, 0);
+            var muzzle = new GameObject("Hazard muzzle").transform; muzzle.SetParent(sentinel.transform, false); muzzle.localPosition = new Vector3(0, 1.2f, -.8f);
+            var warning = new GameObject("Attack telegraph"); warning.transform.SetParent(sentinel.transform, false);
+            Line(warning, AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Kinetic feedback.mat"), .07f);
+            var line = warning.GetComponent<LineRenderer>(); line.positionCount = 2; line.startColor = line.endColor = new Color(1, .25f, .05f);
+            var label = new GameObject("Sentinel state").AddComponent<TextMesh>(); label.transform.SetParent(sentinel.transform, false);
+            label.transform.localPosition = new Vector3(0, 2.5f, 0); label.characterSize = .09f; label.fontSize = 48; label.anchor = TextAnchor.MiddleCenter;
+            var threat = sentinel.AddComponent<TrainingSentinel>(); Set(threat, "player", player); Set(threat, "hazardTemplate", hazard);
+            Set(threat, "muzzle", muzzle); Set(threat, "visual", visual); Set(threat, "telegraph", line); Set(threat, "stateLabel", label);
+            EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+            Debug.Log("Production traversal/combat fixtures added to the existing playground and player prefab.");
+        }
+
         public static void Create()
         {
             if (File.Exists(ScenePath) || File.Exists(PrefabPath)) throw new InvalidOperationException("Production playground already exists; edit it deliberately.");

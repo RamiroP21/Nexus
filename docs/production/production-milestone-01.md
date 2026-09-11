@@ -6,11 +6,11 @@ The owner accepted Gameplay Feel 01, Reactivity 01, Triage 01, Persistence 01, V
 
 - Objective: reusable player/camera, contextual target selection, one physical ability, separate force and damage, reactive targets and a permanent development playground.
 - Invariants: no Production → Experimental dependencies; preserve prototypes, shared Input asset, .NET kernel/ECS and package versions. No server/ECS integration, second power, full combat, city, production art or subsequent mission.
-- Baseline: main `63d1d81`, equal to live origin/main. The sole pre-existing URP 9→10/folder diff exactly matched the authorized restoration; only that file was restored.
+- Baseline: main `49c12f3`, equal to the accepted 01A production baseline before 01B work. The sole pre-existing URP 9→10/folder diff exactly matched the authorized restoration; only that file was restored.
 - Evidence: inspect dependencies; Unity compilation and tests; seven technical Play Mode flows; camera renders; final scoped Git review.
 - Budget: no subagents, at most two major functional corrections and two visual correction rounds.
 - Stop: unsafe unrelated changes, major architectural redesign, non-convergent failures or exhausted correction budget. Publish only with technical PASS.
-- Done: required runtime, scene, targeting rework, tests, Play Mode evidence and documented decisions; human experiential validation remains explicitly pending a fresh targeting replay.
+- Done: required runtime, scene, targeting rework, tests, Play Mode evidence and documented decisions. 01A is technically and experientially accepted by the owner; reticle art/tuning remains provisional and deferred.
 
 ## Promotion review
 
@@ -32,13 +32,13 @@ The camera has a configurable shoulder offset. Both that offset and the backward
 
 `Scenes/SuperhumanPlayground.unity` is a bounded courtyard with steps/landing, camera alcove, targeting cover, lightweight pallet (2 kg), heavy equipment (18 kg), another movable pallet, articulated training mannequin and damageable cabinet. Scene materials/configs are new production assets, not experimental references. The scene is appended to development Build Settings without replacing previous scenes or claiming a release startup flow. No mandatory laboratory HUD is introduced. The centre reticle is neutral/candidate/activation screen feedback; the effect trace remains transient world feedback.
 
-## Validation
+## 01A validation and acceptance
 
 TECHNICAL VALIDATION: PASS
 
-EXPERIENTIAL VALIDATION: PENDING HUMAN RE-PLAYTEST — TARGETING
+EXPERIENTIAL VALIDATION: PASS — OWNER ACCEPTED
 
-The first human playtest rejected the target-bound ring and its implied selection behavior. The scoped rework is now implemented: camera-centre priority, bounded assistance, hysteresis, activation revalidation and a small screen-centre reticle. The runtime is technically validated, but the targeting experience is not accepted until a human replay confirms camera intent, reticle readability and absence of lock-on feel. See [targeting-rework-01.md](targeting-rework-01.md) for the implementation and acceptance criteria.
+The first human playtest rejected the target-bound ring and its implied selection behavior. The scoped rework implemented camera-centre priority, bounded assistance, hysteresis, activation revalidation and a small screen-centre reticle. The owner subsequently accepted the 01A targeting behavior as the experiential baseline. The reticle art and final tuning remain provisional/deferred. See [targeting-rework-01.md](targeting-rework-01.md) for the implementation record.
 
 The first complete Unity run passed 33/37 tests: all 25 existing tests and eight new rules tests passed, while four new Play Mode tests correctly rejected missing prefab config references. Asset creation before a scene switch had left the prefab without its four ScriptableObject references. The correction established the scene first, added a missing-reference guard to authoring, repaired only those four prefab references and added explicit prefab-reference assertions. After this correction, the targeted production suite passed 13/13 (eight rules tests plus five actual Play Mode journeys, including indirect collision coverage). Logs/XML retain the failed first run rather than hiding it.
 
@@ -67,6 +67,10 @@ The fixture uses a fresh scene for each test, synthetic gamepad states and real 
 Root regression: `dotnet build Nexus.sln -c Release` passed with 0 warnings/errors; `dotnet test Nexus.sln -c Release --no-build` passed 211/211 (Core 48, ECS 100, Simulation 59, Determinism 4). No Host diagnostics were rerun because no simulation contract/code changed. Windows standalone build, physical controller and human playtest were not run; they are not implied by Editor evidence. No package, Unity version, render-pipeline or .NET change was made.
 
 Reproduce Unity from the repository root using the installed Unity 6000.3.2f1 executable with `-batchmode -projectPath client/Nexus.Unity -buildTarget Win64 -runTests -testPlatform EditMode -testResults <absolute-output.xml> -logFile <absolute-output.log>`. Tests enter actual Play Mode through the existing Editor-test convention. Production-only filter: `-testFilter Nexus.Gameplay.Tests.SuperhumanPlaytests`; the full run covers all Unity assemblies. Evidence is ignored local output: `artifacts/targeting01a-{targeted-3,full}.{log,xml}` and `client/Nexus.Unity/Logs/Production01/*.png`/observations. Runtime/editor source, prefab, scene, configs, materials, metadata and this report are versioned; generated logs/build artifacts are not.
+
+## 01B traversal and combat foundation
+
+The next bounded production slice is documented in [superhuman-core-01b.md](superhuman-core-01b.md). 01B has **TECHNICAL VALIDATION: PASS** (five focused journeys, 51/51 full Unity regression, .NET 211/211) and **EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**. It adds contextual vault/mantle, fall recovery, player knockback/depletion, a telegraphing sentinel, physical hazards/deflection and impact-releasable cover. It does not change the accepted 01A targeting behavior or authorize 01C.
 
 ## Use and explicit debt
 

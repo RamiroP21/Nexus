@@ -1,6 +1,7 @@
 using Nexus.Gameplay.Abilities;
 using Nexus.Gameplay.CameraSystem;
 using Nexus.Gameplay.Interaction;
+using Nexus.Gameplay.Combat;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -17,10 +18,12 @@ namespace Nexus.Gameplay.Character
         private float priorTimeScale;
         private CursorLockMode priorLock;
         private bool priorVisible;
+        private PlayerVitality vitality;
         public InputActionAsset Actions { get; private set; }
         public bool Paused { get; private set; }
         private void Awake()
         {
+            vitality = GetComponent<PlayerVitality>();
             if (!inputTemplate || !motor || !orbit || !primaryAbility || !targeting)
             { Debug.LogError("LocalPlayerInput requires explicit input, motor, camera, ability and targeting references.", this); enabled = false; return; }
             Actions = Instantiate(inputTemplate);
@@ -39,6 +42,12 @@ namespace Nexus.Gameplay.Character
             if (pause.WasPressedThisFrame()) SetPaused(!Paused);
             if (Paused) return;
             orbit.Look(look.ReadValue<Vector2>(), look.activeControl?.device is Mouse, Time.deltaTime);
+            if (vitality && vitality.Depleted)
+            {
+                motor.Tick(Vector2.zero, false, false, orbit.Yaw, Time.deltaTime, Time.timeAsDouble);
+                if (jump.WasPressedThisFrame()) vitality.ResetTraining();
+                return;
+            }
             motor.Tick(move.ReadValue<Vector2>(), sprint.IsPressed(), jump.WasPressedThisFrame(), orbit.Yaw, Time.deltaTime, Time.timeAsDouble);
             if (primary.WasPressedThisFrame()) primaryAbility.TryActivate();
         }

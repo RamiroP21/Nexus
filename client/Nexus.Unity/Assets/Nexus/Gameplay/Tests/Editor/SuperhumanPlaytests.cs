@@ -391,6 +391,7 @@ namespace Nexus.Gameplay.Tests
         }
         private static void Capture(string name, Camera camera = null)
         {
+            if (SystemInfo.graphicsDeviceType == GraphicsDeviceType.Null) return;
             var texture = new RenderTexture(1280, 720, 24); var pixels = new Texture2D(1280, 720, TextureFormat.RGB24, false);
             var previous = RenderTexture.active;
             try

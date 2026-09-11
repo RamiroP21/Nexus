@@ -21,5 +21,10 @@ namespace Nexus.Gameplay.Combat
             Changed?.Invoke(Health);
             return true;
         }
+        public void ResetHealth()
+        {
+            health = new Health(maximumHealth);
+            Changed?.Invoke(health);
+        }
     }
 }
