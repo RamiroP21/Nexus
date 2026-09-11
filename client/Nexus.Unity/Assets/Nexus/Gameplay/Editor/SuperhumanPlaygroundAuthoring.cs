@@ -17,7 +17,7 @@ using Object = UnityEngine.Object;
 namespace Nexus.Gameplay.Editor
 {
     // One-time authoring entry point; never silently overwrites the permanent scene or its assets.
-    public static class SuperhumanPlaygroundAuthoring
+    public static partial class SuperhumanPlaygroundAuthoring
     {
         public const string Root = "Assets/Nexus/Gameplay";
         public const string ScenePath = Root + "/Scenes/SuperhumanPlayground.unity";

@@ -7,7 +7,7 @@
 - Baseline: `7ea398a` (`feat: add traversal and combat foundation`).
 - Worker: one fresh GPT-6 Astra Low worker implemented runtime, authoring and six focused journeys; its advanced quota was exhausted after implementation and the reset-pose correction.
 - Orchestrator: Luna performed path correction, Unity/.NET validation, scope audit, documentation and closure. No second worker or substantial Luna reimplementation was used.
-- 01B human experiential validation is recorded as **PASS**. 01C remains **EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**.
+- 01B and 01C human experiential validation are recorded as **PASS — OWNER ACCEPTED**. Reticle art/tuning remains provisional and deferred.
 
 ## Hostile architecture
 
@@ -47,12 +47,12 @@ Root validation passed:
 
 The existing visual evidence under `client/Nexus.Unity/Logs/Production01B/` was reviewed: the courtyard composition, hazard/telegraph readability, greybox actors and staggered state render correctly. 01C's six Play Mode tests validate the new encounter states and physics; no dedicated 01C camera captures were added, keeping validation-only closure free of unrelated capture plumbing. The authored hostile, telegraph, cover and prop are serialized in the existing scene and are visible through the normal Game View flow.
 
-## Required human review and debt
+## Acceptance and debt
 
 **TECHNICAL VALIDATION: PASS**
 
-**EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+**EXPERIENTIAL VALIDATION: PASS — OWNER ACCEPTED**
 
-Human review should answer whether the hostile appears reactive, the telegraph gives enough response time, ordinary movement/traversal is sufficient, cover and deflection feel intentional, environmental damage feels systemic rather than scripted, and camera-intent targeting remains trustworthy under pressure.
+The owner accepted the 01C encounter after human review: the hostile reads as reactive, the telegraph provides a response window, movement/traversal and cover are sufficient for this bounded lane, environmental damage reads as systemic, and camera-intent targeting remains trustworthy under pressure. This acceptance applies to the greybox slice; final art, tuning and broader combat remain deferred.
 
 Remaining debt is deliberately bounded: greybox visuals, provisional reticle art/tuning, no production animation/VFX/audio, no multiple hostile archetypes or squads, no navigation/pathfinding, no melee/weapon inventory, no progression/save/city systems, and no Nexus.Server/ECS integration. Do not start 01D from this report.
