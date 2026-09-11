@@ -13,6 +13,7 @@ namespace Nexus.Gameplay.Combat
         [SerializeField] private Transform muzzle, visual;
         [SerializeField] private LineRenderer telegraph;
         [SerializeField] private TextMesh stateLabel;
+        [SerializeField] private bool urbanPresentation;
         [SerializeField, Min(.1f)] private float detectionRange = 14, attackRange = 11, preferredRange = 7;
         [SerializeField, Min(.1f)] private float moveSpeed = 2.8f, acceleration = 9, telegraphSeconds = 1.15f, recoverySeconds = 1.6f;
         [SerializeField, Min(.1f)] private float projectileSpeed = 10, staggerSeconds = .65f, staggerProtectionSeconds = 3;
@@ -23,6 +24,8 @@ namespace Nexus.Gameplay.Combat
         private Quaternion spawnRotation, visualRest;
         private float remaining, staggerProtection;
         private bool acquired, halted;
+        private Transform[] presentationParts;
+        public Transform Visual => visual;
         private readonly RaycastHit[] hits = new RaycastHit[32];
         public HostileState State { get; private set; }
         public PlayerVitality Target => acquired ? target : null;
@@ -40,6 +43,7 @@ namespace Nexus.Gameplay.Combat
             if (!target || !hazardTemplate || !muzzle || !visual || !telegraph || !stateLabel)
             { Debug.LogError("HostileCombatant requires target, hazard, muzzle and presentation references.", this); enabled = false; return; }
             visualRest = visual.localRotation;
+            presentationParts = visual.GetComponentsInChildren<Transform>();
         }
         private void OnEnable()
         { if (!physical) return; physical.Impacted += OnImpact; receiver.Changed += OnHealth; OnHealth(receiver.Health); Present(); }
@@ -148,6 +152,11 @@ namespace Nexus.Gameplay.Combat
             stateLabel.color = State == HostileState.Telegraph || State == HostileState.Attack ? new Color(1, .3f, .08f)
                 : State == HostileState.Staggered ? Color.cyan : Color.white;
             visual.localRotation = visualRest * Quaternion.Euler(State == HostileState.Depleted ? 75 : State == HostileState.Staggered ? -25 : State == HostileState.Telegraph ? -10 : 0, 0, 0);
+            if (!urbanPresentation) return;
+            visual.localPosition = Vector3.up * (State == HostileState.Depleted ? .18f : 0);
+            if (presentationParts == null) return;
+            foreach (var part in presentationParts)
+                if (part.name == "Arm") part.localRotation = Quaternion.Euler(State == HostileState.Telegraph ? -90 : State == HostileState.Staggered ? 45 : 0, 0, State == HostileState.Staggered ? Mathf.Sign(part.localPosition.x) * -55 : 0);
         }
     }
 }

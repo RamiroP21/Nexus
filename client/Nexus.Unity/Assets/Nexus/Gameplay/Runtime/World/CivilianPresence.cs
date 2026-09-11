@@ -18,6 +18,8 @@ namespace Nexus.Gameplay.World
         private Vector3 spawn;
         private Quaternion rotation;
         private bool alarmed;
+        private Transform[] presentationParts;
+        public Transform Visual => visual;
         private readonly Collider[] nearby = new Collider[32];
         private readonly RaycastHit[] obstacles = new RaycastHit[16];
         public CivilianState State { get; private set; }
@@ -30,6 +32,7 @@ namespace Nexus.Gameplay.World
             spawn = body.position; rotation = body.rotation;
             if (!refuge || !visual || !stateLabel)
             { Debug.LogError("CivilianPresence requires refuge and presentation.", this); enabled = false; }
+            if (visual) presentationParts = visual.GetComponentsInChildren<Transform>();
         }
         private void OnEnable()
         { if (physical) { physical.Impacted += OnImpact; receiver.Changed += OnHealth; } }
@@ -87,7 +90,19 @@ namespace Nexus.Gameplay.World
             if (Harmed) State = receiver.Health.IsDepleted ? CivilianState.Depleted : CivilianState.Injured;
             stateLabel.text = State == CivilianState.Blocked ? "RESIDENT\nEXIT BLOCKED" : "RESIDENT\n" + State.ToString().ToUpperInvariant();
             stateLabel.color = Harmed ? new Color(1, .3f, .15f) : State == CivilianState.Sheltered ? Color.green : Color.white;
-            visual.localRotation = Quaternion.Euler(State == CivilianState.Depleted ? 80 : Harmed ? 35 : 0, 0, 0);
+            bool fallen = State == CivilianState.Depleted;
+            bool injured = State == CivilianState.Injured;
+            bool shelter = State == CivilianState.Sheltered;
+            bool blocked = State == CivilianState.Blocked;
+            float stride = State == CivilianState.Fleeing ? Mathf.Sin(Time.time * 13) * 30 : 0;
+            visual.localPosition = new Vector3(0, fallen ? .22f : injured ? -.48f : shelter ? -.38f : 0, 0);
+            visual.localRotation = Quaternion.Euler(fallen ? 88 : injured ? 32 : shelter ? 18 : State == CivilianState.Fleeing ? 12 : 0, 0, 0);
+            foreach (var part in presentationParts)
+            {
+                float side = Mathf.Sign(part.localPosition.x);
+                if (part.name == "Arm") part.localRotation = Quaternion.Euler(blocked ? -130 : shelter ? -85 : injured ? -65 : -stride * side, 0, blocked ? side * -30 : side * -8);
+                if (part.name == "Leg") part.localRotation = Quaternion.Euler(shelter || injured ? -35 : stride * side, 0, 0);
+            }
         }
         public void ResetCivilian()
         {

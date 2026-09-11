@@ -15,6 +15,8 @@ namespace Nexus.Gameplay.World
         private Vector3[] positions;
         private Quaternion[] rotations;
         private RigidbodyConstraints[] constraints;
+        private Renderer[] debugLabels;
+        public bool DebugVisible { get; private set; }
         public UrbanSituationState State { get; private set; }
         public CivilianPresence[] Civilians => (CivilianPresence[])civilians.Clone();
         public HostileCombatant Hostile => hostile;
@@ -26,11 +28,26 @@ namespace Nexus.Gameplay.World
             positions = new Vector3[resetBodies.Length]; rotations = new Quaternion[resetBodies.Length]; constraints = new RigidbodyConstraints[resetBodies.Length];
             for (int i = 0; i < resetBodies.Length; i++)
             { positions[i] = resetBodies[i].position; rotations[i] = resetBodies[i].rotation; constraints[i] = resetBodies[i].constraints; }
+            var labels = new System.Collections.Generic.List<Renderer>();
+            labels.Add(streetNotice.GetComponent<Renderer>());
+            foreach (var label in hostile.GetComponentsInChildren<TextMesh>(true)) labels.Add(label.GetComponent<Renderer>());
+            foreach (var civil in civilians)
+                foreach (var label in civil.GetComponentsInChildren<TextMesh>(true)) labels.Add(label.GetComponent<Renderer>());
+            debugLabels = labels.ToArray();
+            SetDebugVisible(false);
         }
+        public void SetDebugVisible(bool visible)
+        {
+            DebugVisible = visible;
+            if (debugLabels != null) foreach (var label in debugLabels) if (label) label.enabled = visible;
+            if (player) player.ShowDiagnostics = visible;
+        }
+        public void ToggleDebug() => SetDebugVisible(!DebugVisible);
         private void Start() => Evaluate();
         private void Update()
         {
             Evaluate();
+            if ((Application.isEditor || Debug.isDebugBuild) && Keyboard.current != null && Keyboard.current.f9Key.wasPressedThisFrame) ToggleDebug();
             if ((Application.isEditor || Debug.isDebugBuild) && Keyboard.current != null && Keyboard.current.f8Key.wasPressedThisFrame) ResetBlock();
         }
         public void Evaluate()
@@ -63,8 +80,9 @@ namespace Nexus.Gameplay.World
         }
         private void OnGUI()
         {
+            if (!DebugVisible) return;
             GUI.Label(new Rect(20, Screen.height - 110, 850, 90), "URBAN BLOCK 01 | Market / Homes / Service alley\n" + streetNotice.text
-                + ((Application.isEditor || Debug.isDebugBuild) ? "\nF8: reset block (development)" : ""));
+                + ((Application.isEditor || Debug.isDebugBuild) ? "\nF8: reset block | F9: hide QA" : ""));
         }
     }
 }

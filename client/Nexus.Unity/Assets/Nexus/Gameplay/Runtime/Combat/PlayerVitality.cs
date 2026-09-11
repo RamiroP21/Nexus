@@ -13,6 +13,7 @@ namespace Nexus.Gameplay.Combat
         private Vector3 spawn;
         public bool Depleted => receiver && receiver.Health.IsDepleted;
         public DamageReceiver Receiver => receiver;
+        public bool ShowDiagnostics { get; set; } = true;
         private void Awake()
         { motor = GetComponent<CharacterMotor>(); receiver = GetComponent<DamageReceiver>(); spawn = transform.position; }
         private void OnEnable() { receiver.Changed += OnHealth; OnHealth(receiver.Health); }
@@ -38,6 +39,7 @@ namespace Nexus.Gameplay.Combat
         }
         private void OnGUI()
         {
+            if (!ShowDiagnostics) return;
             string status = Depleted ? "DEPLETED — Space / South to recover" : motor.State == MotorState.Knockback ? "IMPACT — recovering" : motor.State.ToString();
             GUI.Label(new Rect(20, Screen.height - 58, 410, 45), $"Integrity {receiver.Health.Current:0}/{receiver.Health.Maximum:0}   |   {status}");
         }

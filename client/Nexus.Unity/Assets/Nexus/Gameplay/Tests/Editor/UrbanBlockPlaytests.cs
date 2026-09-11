@@ -47,6 +47,43 @@ namespace Nexus.Gameplay.Tests
         { Place(new Vector3(0, .05f, 3)); hostile.Tick(.01f); block.Evaluate(); Assert.That(hostile.Target, Is.EqualTo(player)); }
 
         [UnityTest]
+        public IEnumerator DebugDefaultsOffTogglesWithoutChangingSituationOrSignage()
+        {
+            Assert.That(block.DebugVisible, Is.False);
+            Assert.That(player.ShowDiagnostics, Is.False);
+            var label = block.Civilians[0].GetComponentInChildren<TextMesh>().GetComponent<Renderer>();
+            Assert.That(label.enabled, Is.False);
+            var sign = Object.FindObjectsByType<TextMesh>(FindObjectsSortMode.None).Single(t => t.text == "MERCADO 24");
+            Assert.That(sign.GetComponent<Renderer>().enabled, Is.True);
+            CaptureFrame("debug-off-street", new Vector3(0, 2.3f, -8), new Vector3(0, 1, 5));
+            var state = block.State;
+            block.ToggleDebug(); Assert.That(label.enabled, Is.True); Assert.That(player.ShowDiagnostics, Is.True);
+            CaptureFrame("debug-on-street", new Vector3(0, 2.3f, -8), new Vector3(0, 1, 5));
+            block.ToggleDebug(); Assert.That(label.enabled, Is.False); Assert.That(block.State, Is.EqualTo(state));
+            Assert.That(sign.GetComponent<Renderer>().enabled, Is.True);
+            yield return null; LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator InjuryPoseRemainsPhysicalAfterReturnAndResetRestoresUpright()
+        {
+            var civil = block.Civilians[0];
+            civil.GetComponent<DamageReceiver>().Receive(new Damage(12)); civil.Tick(.02f);
+            Assert.That(civil.Visual.localPosition.y, Is.LessThan(-.3f));
+            var injuryPose = civil.Visual.localRotation;
+            CaptureFrame("resident-injury-close", new Vector3(2, 2.8f, -1), new Vector3(4, .8f, 2));
+            hostile.GetComponent<DamageReceiver>().Receive(new Damage(100)); block.Evaluate();
+            Place(new Vector3(0, .05f, -16)); yield return null; Place(new Vector3(0, .05f, 3));
+            Assert.That(Quaternion.Angle(civil.Visual.localRotation, injuryPose), Is.LessThan(.01f));
+            CaptureFrame("resident-injury-return", new Vector3(2, 2.8f, -1), new Vector3(4, .8f, 2));
+            Assert.That(block.DebugVisible, Is.False);
+            block.ResetBlock();
+            Assert.That(civil.Visual.localPosition, Is.EqualTo(Vector3.zero));
+            Assert.That(Quaternion.Angle(civil.Visual.localRotation, Quaternion.identity), Is.LessThan(.01f));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
         public IEnumerator ProductionSceneHasAcceptedRigSemanticZonesAndNoExperimentalDependencies()
         {
             Assert.That(Object.FindObjectsByType<CharacterMotor>(FindObjectsSortMode.None).Length, Is.EqualTo(1));
@@ -122,12 +159,14 @@ namespace Nexus.Gameplay.Tests
         {
             Engage(); hostile.Tick(.5f);
             Assert.That(hostile.State, Is.EqualTo(HostileState.Telegraph));
+            CaptureFrame("hostile-telegraph", new Vector3(4, 3, 6), new Vector3(0, 1.3f, 11));
             var camera = Object.FindFirstObjectByType<ThirdPersonCamera>(); camera.enabled = false;
             camera.transform.position = new Vector3(0, 1.2f, 2); camera.transform.LookAt(hostile.GetComponent<PhysicalTarget>().AimPoint);
             var selector = player.GetComponent<ContextualTargeting>(); selector.Suspended = false; Physics.SyncTransforms();
             Assert.That(selector.TrySelect(out var selected), Is.True); Assert.That(selected.Target, Is.EqualTo(hostile.GetComponent<PhysicalTarget>()));
             Assert.That(player.GetComponent<KineticVectorAbility>().TryActivate(), Is.EqualTo(ActivationResult.Activated));
             Assert.That(hostile.State, Is.EqualTo(HostileState.Staggered));
+            CaptureFrame("hostile-stagger", new Vector3(4, 3, 6), new Vector3(0, 1.3f, 11));
             yield return null; LogAssert.NoUnexpectedReceived();
         }
 

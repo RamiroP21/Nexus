@@ -59,3 +59,23 @@ The renders show the street, market, residential massing, service alley, travers
 Runtime additions are limited to `CivilianPresence` and `UrbanBlockSituation` under `Assets/Nexus/Gameplay/Runtime/World`. `UrbanBlockAuthoring` is editor-only and extends the existing authoring entry point with one explicit menu action. `UrbanBlockPlaytests` exercises observable scene behavior. Required Unity metadata is included. No existing combat, targeting or traversal source was changed; only the authoring class became `partial` to host the new menu action.
 
 The slice remains deliberately greybox: no production art, animation, audio, VFX, persistence/save integration, civilian dialogue, multiple hostile archetypes, squad AI, navigation, server/ECS bridge or final reticle tuning. Current local Unity physics remains outside the deterministic headless contract. Do not start 02B until this scene receives human playtest review and an explicit mission.
+
+## 02A.1 diegetic legibility pass
+
+The first human review found that 02A communicated too much through large state labels and QA overlays. This pass keeps the situation rules intact and moves normal comprehension toward space, silhouette, movement, pose, materials and physical aftermath. It does not add a mechanic, archetype or simulation layer.
+
+- Debug/presentation separation: UrbanBlock QA labels and diagnostics are hidden by default. `F9` toggles them for inspection; `F8` remains the development reset. Diegetic signs such as `MERCADO 24` and `PATIO SUR / HOMES` remain visible. The toggle is presentation-only and does not alter situation state.
+- Civilians: added readable greybox details (hair, apron/bag or satchel) and state poses for normal, fleeing, blocked, sheltered, injured and depleted. Injury/depletion remain physical and persist after leaving and returning.
+- Hostile/hazard: the urban hostile uses a distinct shoulder silhouette and state poses for telegraph/stagger/depleted; the existing telegraph line remains visible before damage. The physical hazard gains only a provisional trail, preserving deflection and collision contracts.
+- Urban semantics: added non-colliding produce stalls/crates, residential windows/sills and bench, and stacked service pallets. These reinforce market, residential and service roles without rebuilding the block or introducing external assets.
+- Outcomes: `Secured` and `SecuredWithCasualties` remain distinct through the disabled hostile, sheltered residents, injured/fallen civilian and displaced props; the presentation persists through return and resets with the authored baseline.
+
+Focused legibility coverage passed **10/10**: the original eight UrbanBlock journeys plus debug-toggle and injury-pose/reset journeys. The final complete Unity regression passed **67/67**, 0 failed and 0 skipped. Visual evidence is generated under `client/Nexus.Unity/Logs/UrbanBlock02A/`: the calm street, market, residential/service area, traversal route, normal/fleeing residents, hostile telegraph/stagger, hazard flight, both aftermaths, returned aftermath and `debug-off-street.png`/`debug-on-street.png` pair. These are actual GPU RenderTexture captures; no pixel-diff assertions were added.
+
+The pass used one fresh Astra Low worker for runtime presentation, authoring and focused tests. Luna applied the authoring method, corrected a simple capture helper compile issue, reviewed that diegetic signage stayed visible, ran focused/full Unity and .NET validation, and updated this report. The only known log diagnostics are the environment licensing access-token message and existing URP shader-import messages; no new C# errors or unexpected exceptions were observed.
+
+**02A.1 TECHNICAL VALIDATION: PASS**
+
+**02A.1 EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+
+Human review remains required to judge whether the block reads naturally without QA labels, whether civilian/hostile roles and telegraphs are clear at play distance, and whether the two physical outcomes are immediately distinguishable. Final art, animation, VFX/audio pipelines and reticle tuning remain deferred. Do not start 02B.
