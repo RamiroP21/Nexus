@@ -41,8 +41,8 @@ Visual evidence was rendered from the actual playground camera and retained loca
 
 **TECHNICAL VALIDATION: PASS**
 
-**EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+**EXPERIENTIAL VALIDATION: PASS — OWNER ACCEPTED**
 
-Human review must verify that vault/mantle timing, landing recovery, telegraph readability, hazard response, deflection and cover release feel intentional in the actual Game View. 01A targeting was accepted by the owner as an experiential baseline, while its reticle art/tuning remains provisional and deferred; 01B does not reopen or redesign it.
+The owner accepted vault/mantle timing, landing recovery, telegraph readability, hazard response, deflection and cover release as the 01B experiential baseline. 01A targeting was accepted by the owner as an experiential baseline, while its reticle art/tuning remains provisional and deferred; 01B does not reopen or redesign it.
 
 Deferred: production animation/model, traversal polish and edge-case tuning, melee/ranged combat, enemies/NPC AI, VFX/audio, progression/save integration, server/ECS integration and any later production mission. Do not start 01C from this report.

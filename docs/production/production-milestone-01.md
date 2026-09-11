@@ -70,10 +70,14 @@ Reproduce Unity from the repository root using the installed Unity 6000.3.2f1 ex
 
 ## 01B traversal and combat foundation
 
-The next bounded production slice is documented in [superhuman-core-01b.md](superhuman-core-01b.md). 01B has **TECHNICAL VALIDATION: PASS** (five focused journeys, 51/51 full Unity regression, .NET 211/211) and **EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**. It adds contextual vault/mantle, fall recovery, player knockback/depletion, a telegraphing sentinel, physical hazards/deflection and impact-releasable cover. It does not change the accepted 01A targeting behavior or authorize 01C.
+The bounded 01B slice is documented in [superhuman-core-01b.md](superhuman-core-01b.md). 01B has **TECHNICAL VALIDATION: PASS** (five focused journeys, 51/51 full Unity regression, .NET 211/211) and **EXPERIENTIAL VALIDATION: PASS — OWNER ACCEPTED**. It adds contextual vault/mantle, fall recovery, player knockback/depletion, a telegraphing sentinel, physical hazards/deflection and impact-releasable cover. It does not change the accepted 01A targeting behavior.
+
+## 01C first real combat encounter
+
+The first hostile encounter is documented in [superhuman-core-01c.md](superhuman-core-01c.md). 01C has **TECHNICAL VALIDATION: PASS** (six focused journeys, five traversal-regression journeys, 57/57 full Unity regression, .NET 211/211) and **EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**. It adds one dynamic hostile with bounded perception, local positioning, a telegraphed physical attack, stagger/interruption, cover, environmental prop damage and a minimal win/lose/reset lifecycle. One Astra worker implemented the slice; Luna performed validation and closure. 01D is not authorized.
 
 ## Use and explicit debt
 
 Open **Nexus → Production → Open Superhuman Playground**, then Play. WASD/mouse or gamepad sticks; Shift/left-stick press sprint; Space/south button jump; click/right trigger Kinetic Vector; Esc/Start pause/resume. The small screen-centre reticle is neutral without a candidate, changes subtly for a candidate and pulses on activation. There is no target-bound ring, experimental completion/reset loop or lock-on mode; stop/re-enter Play for a fresh playground.
 
-Deferred: production animation and character model, advanced traversal, melee/ranged combat, enemies and NPC AI, VFX, sound, final targeting tuning/experiential acceptance, progression, save integration, Nexus.Server and ECS integration. Current local Unity physics is not part of the deterministic headless contract. No Session Loop 01B or subsequent production mission is authorized by this implementation.
+Deferred: production animation and character model, advanced traversal polish, melee/weapon systems, multiple enemies and NPC AI, VFX, sound, final targeting tuning/experiential acceptance, progression, save integration, Nexus.Server and ECS integration. Current local Unity physics is not part of the deterministic headless contract. No Session Loop 01B, 01D or subsequent production mission is authorized by this implementation.

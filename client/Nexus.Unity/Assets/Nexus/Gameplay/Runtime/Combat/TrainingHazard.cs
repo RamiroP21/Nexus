@@ -10,6 +10,7 @@ namespace Nexus.Gameplay.Combat
         [SerializeField, Min(.1f)] private float lifetime = 5;
         private Rigidbody body;
         private GameObject owner;
+        public GameObject Source { get; private set; }
         private Vector3 previous;
         private float remaining;
         private bool spent;
@@ -24,7 +25,7 @@ namespace Nexus.Gameplay.Combat
         private void OnImpact(ForceImpact impact) { if (impact.Impulse.sqrMagnitude > 1) owner = null; }
         public void Launch(GameObject source, Vector3 velocity)
         {
-            owner = source; body = GetComponent<Rigidbody>(); previous = transform.position;
+            Source = owner = source; body = GetComponent<Rigidbody>(); previous = transform.position;
             remaining = lifetime; spent = false; body.linearVelocity = velocity;
         }
         private void FixedUpdate()
@@ -38,11 +39,16 @@ namespace Nexus.Gameplay.Combat
             if (!spent && distance > .0001f)
             {
                 int count = Physics.SphereCastNonAlloc(previous, shape.radius * Mathf.Max(transform.lossyScale.x, transform.lossyScale.y, transform.lossyScale.z), travel / distance, hits, distance, ~0, QueryTriggerInteraction.Ignore);
+                Collider closest = null;
+                float nearest = float.PositiveInfinity;
                 for (int i = 0; i < count; i++)
                 {
                     var hit = hits[i].collider;
-                    if (hit.GetComponent<PlayerVitality>() || hit.GetComponent<DamageReceiver>()) TryHit(hit.gameObject);
+                    if (hit.gameObject == gameObject || hit.gameObject == owner || hits[i].distance >= nearest) continue;
+                    nearest = hits[i].distance; closest = hit;
                 }
+                if (closest) Contact(closest.gameObject);
+                else if (count == hits.Length) spent = true;
             }
             if (!spent)
             {
@@ -50,7 +56,7 @@ namespace Nexus.Gameplay.Combat
                 for (int i = 0; i < contactCount; i++)
                 {
                     var contact = contacts[i];
-                    if (contact.GetComponent<PlayerVitality>() || contact.GetComponent<DamageReceiver>()) TryHit(contact.gameObject);
+                    Contact(contact.gameObject);
                 }
             }
             previous = body.position;
@@ -64,6 +70,13 @@ namespace Nexus.Gameplay.Combat
             if (accepted) spent = true;
             return accepted;
         }
-        private void OnCollisionEnter(Collision collision) => TryHit(collision.gameObject);
+        private void Contact(GameObject other)
+        {
+            if (spent || !other || other == gameObject || other == owner) return;
+            TryHit(other);
+            // Any solid cover consumes the attack, even when it has no damage receiver.
+            spent = true;
+        }
+        private void OnCollisionEnter(Collision collision) => Contact(collision.gameObject);
     }
 }

@@ -22,6 +22,45 @@ namespace Nexus.Gameplay.Editor
         public const string Root = "Assets/Nexus/Gameplay";
         public const string ScenePath = Root + "/Scenes/SuperhumanPlayground.unity";
         public const string PrefabPath = Root + "/Prefabs/SuperhumanPlayerRig.prefab";
+        [MenuItem("Nexus/Production/Add First Combat Encounter")]
+        public static void AddFirstCombatEncounter()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var scene = EditorSceneManager.OpenScene(ScenePath);
+            if (Object.FindFirstObjectByType<HostileCombatant>()) throw new InvalidOperationException("Encounter already exists.");
+            var player = Object.FindFirstObjectByType<PlayerVitality>();
+            if (!player) throw new InvalidOperationException("01B player required.");
+            var root = new GameObject("First hostile encounter").transform;
+            var shell = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Target shell.mat");
+            var steel = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Steel.mat");
+            var accent = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Safety trim.mat");
+            var friction = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Root + "/Data/PlaygroundContact.physicMaterial");
+            var cover = Box("Encounter reusable cover", new Vector3(8, 1.1f, 10), new Vector3(2.4f, 2.2f, .4f), steel, root);
+            var coverBody = cover.AddComponent<Rigidbody>(); ConfigureBody(coverBody, 7); coverBody.constraints = RigidbodyConstraints.FreezeAll;
+            cover.AddComponent<PhysicalTarget>(); cover.AddComponent<ImpactBarrier>();
+            var prop = Crate("Encounter kinetic prop", new Vector3(12, .85f, 11), 3, shell, accent, root, friction);
+            var hostile = new GameObject("Greybox hostile"); hostile.transform.SetParent(root); hostile.transform.position = new Vector3(10, .05f, 16);
+            hostile.transform.rotation = Quaternion.Euler(0, 180, 0);
+            var shape = hostile.AddComponent<CapsuleCollider>(); shape.center = Vector3.up; shape.height = 2; shape.radius = .45f;
+            var body = hostile.AddComponent<Rigidbody>(); ConfigureBody(body, 8); body.constraints = RigidbodyConstraints.FreezeRotation;
+            hostile.AddComponent<PhysicalTarget>(); hostile.AddComponent<DamageReceiver>(); hostile.AddComponent<CollisionDamage>();
+            var visual = Humanoid(hostile.transform, steel, shell, accent);
+            var muzzle = new GameObject("Hostile muzzle").transform; muzzle.SetParent(hostile.transform, false); muzzle.localPosition = new Vector3(0, 1.2f, .85f);
+            var warning = new GameObject("Committed attack warning"); warning.transform.SetParent(hostile.transform, false);
+            Line(warning, AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Kinetic feedback.mat"), .09f);
+            var line = warning.GetComponent<LineRenderer>(); line.positionCount = 2; line.startColor = line.endColor = new Color(1, .25f, .05f);
+            var label = new GameObject("Hostile state").AddComponent<TextMesh>(); label.transform.SetParent(hostile.transform, false);
+            label.transform.localPosition = new Vector3(0, 2.7f, 0); label.transform.localRotation = Quaternion.Euler(0, 180, 0);
+            label.characterSize = .08f; label.fontSize = 48; label.anchor = TextAnchor.MiddleCenter;
+            var threat = hostile.AddComponent<HostileCombatant>();
+            var hazard = Object.FindObjectsByType<TrainingHazard>(FindObjectsInactive.Include, FindObjectsSortMode.None).Single();
+            Set(threat, "target", player); Set(threat, "hazardTemplate", hazard); Set(threat, "muzzle", muzzle); Set(threat, "visual", visual); Set(threat, "telegraph", line); Set(threat, "stateLabel", label);
+            var encounter = player.gameObject.AddComponent<CombatEncounter>(); Set(encounter, "player", player); Set(encounter, "hostile", threat);
+            var serialized = new SerializedObject(encounter); var bodies = serialized.FindProperty("resetBodies"); bodies.arraySize = 2;
+            bodies.GetArrayElementAtIndex(0).objectReferenceValue = coverBody; bodies.GetArrayElementAtIndex(1).objectReferenceValue = prop; serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+            Debug.Log("First hostile encounter authored in existing SuperhumanPlayground.");
+        }
         [MenuItem("Nexus/Production/Open Superhuman Playground")]
         public static void Open()
         { if (EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) EditorSceneManager.OpenScene(ScenePath); }

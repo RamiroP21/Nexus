@@ -19,11 +19,13 @@ namespace Nexus.Gameplay.Character
         private CursorLockMode priorLock;
         private bool priorVisible;
         private PlayerVitality vitality;
+        private CombatEncounter encounter;
         public InputActionAsset Actions { get; private set; }
         public bool Paused { get; private set; }
         private void Awake()
         {
             vitality = GetComponent<PlayerVitality>();
+            encounter = GetComponent<CombatEncounter>();
             if (!inputTemplate || !motor || !orbit || !primaryAbility || !targeting)
             { Debug.LogError("LocalPlayerInput requires explicit input, motor, camera, ability and targeting references.", this); enabled = false; return; }
             Actions = Instantiate(inputTemplate);
@@ -42,6 +44,9 @@ namespace Nexus.Gameplay.Character
             if (pause.WasPressedThisFrame()) SetPaused(!Paused);
             if (Paused) return;
             orbit.Look(look.ReadValue<Vector2>(), look.activeControl?.device is Mouse, Time.deltaTime);
+            if (encounter) encounter.Evaluate();
+            if (encounter && encounter.Finished && jump.WasPressedThisFrame())
+            { encounter.ResetEncounter(); return; }
             if (vitality && vitality.Depleted)
             {
                 motor.Tick(Vector2.zero, false, false, orbit.Yaw, Time.deltaTime, Time.timeAsDouble);

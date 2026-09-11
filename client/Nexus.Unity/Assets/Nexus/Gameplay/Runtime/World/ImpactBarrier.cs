@@ -19,5 +19,6 @@ namespace Nexus.Gameplay.World
             target.Body.constraints = RigidbodyConstraints.None;
             // The incoming impulse already supplies the force; release only the physical support.
         }
+        public void ResetBarrier() => Released = false;
     }
 }
