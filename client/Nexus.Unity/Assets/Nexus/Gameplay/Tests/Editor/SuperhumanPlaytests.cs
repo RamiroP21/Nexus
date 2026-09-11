@@ -101,7 +101,7 @@ namespace Nexus.Gameplay.Tests
         {
             var light = Target("Light pallet"); var heavy = Target("Heavy equipment");
             yield return Walk(new Vector3(-7, 0, -2)); yield return AimAt(light);
-            Assert.That(targeting.Current, Is.EqualTo(light)); Assert.That(Object.FindFirstObjectByType<TargetFeedback>().Visible, Is.True);
+            Assert.That(targeting.Current, Is.EqualTo(light)); Assert.That(Object.FindFirstObjectByType<TargetFeedback>().State, Is.EqualTo(ReticleState.Candidate));
             Capture("light-targeted"); Vector3 before = light.Body.position;
             Vector3 playerScreen = orbit.View.WorldToViewportPoint(motor.transform.position + Vector3.up);
             Vector3 targetScreen = orbit.View.WorldToViewportPoint(light.AimPoint);
@@ -129,7 +129,7 @@ namespace Nexus.Gameplay.Tests
             orbit.Look(new Vector2(0, orbit.Pitch + 50) / orbit.Settings.MouseSensitivity, true, 0); yield return Advance(.2f);
             int shots = ability.ActivationCount; yield return Fire();
             Assert.That(ability.ActivationCount, Is.EqualTo(shots)); Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.InvalidTarget));
-            Assert.That(ability.Ready, Is.True); Assert.That(Object.FindFirstObjectByType<TargetFeedback>().Visible, Is.False); Capture("no-target");
+            Assert.That(ability.Ready, Is.True); Assert.That(Object.FindFirstObjectByType<TargetFeedback>().State, Is.EqualTo(ReticleState.Neutral)); Capture("no-target");
             Record("interactions", $"lightTravel={lightTravel:F3}; heavyTravel={heavyTravel:F3}; activations={shots}; reactiveHits={entity.ImpactCount}; cabinetHealth={cabinet.GetComponent<DamageReceiver>().Health.Current}");
             LogAssert.NoUnexpectedReceived();
         }
@@ -175,6 +175,165 @@ namespace Nexus.Gameplay.Tests
             LogAssert.NoUnexpectedReceived();
         }
         private PhysicalTarget Target(string name) => GameObject.Find(name).GetComponent<PhysicalTarget>();
+        [UnityTest]
+        public IEnumerator CentreRayBeatsNearLateralAndSizeCannotStealIntent()
+        {
+            IsolateAim();
+            var lateral = AimTarget("Near lateral", .08f, 6, .3f);
+            var centred = AimTarget("Far centred", 0, 18, .3f);
+            AssertSelection(centred);
+            lateral.transform.localScale = Vector3.one;
+            Physics.SyncTransforms(); AssertSelection(centred);
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.Activated));
+            Assert.That(ability.LastTarget, Is.EqualTo(centred));
+            Assert.That(lateral.Body.linearVelocity, Is.EqualTo(Vector3.zero));
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator AssistanceRetainsSmallJitterButReleasesAndRetargetsWithCamera()
+        {
+            IsolateAim();
+            var left = AimTarget("Left", -.04f, 10, .15f);
+            var right = AimTarget("Right", .045f, 10, .15f);
+            AssertSelection(left);
+            orbit.transform.rotation = Quaternion.Euler(0, .5f, 0);
+            for (int i = 0; i < 8; i++) AssertSelection(left);
+            orbit.transform.LookAt(right.AimPoint); AssertSelection(right);
+            orbit.transform.rotation = Quaternion.Euler(0, 40, 0);
+            Assert.That(targeting.TrySelect(out _), Is.False); Assert.That(targeting.Current, Is.Null);
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator CloseCandidatesUseAuthoredTieBreakAndRetainSelection()
+        {
+            IsolateAim();
+            var first = AimTarget("Equal first", -.04f, 10, .15f);
+            AimTarget("Equal second", .04f, 10, .15f);
+            for (int i = 0; i < 4; i++)
+            {
+                targeting.enabled = false; targeting.enabled = true;
+                AssertSelection(first); AssertSelection(first);
+            }
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator SizeAllowanceIsBoundedAndDoesNotBecomeLockOn()
+        {
+            IsolateAim();
+            var large = AimTarget("Large assisted", .09f, 10, 1);
+            AssertSelection(large);
+            targeting.enabled = false; targeting.enabled = true;
+            large.transform.localScale = Vector3.one * .15f; Physics.SyncTransforms();
+            Assert.That(targeting.TrySelect(out _), Is.False);
+            large.transform.localScale = Vector3.one;
+            PlaceAimTarget(large, .101f, 10); Assert.That(targeting.TrySelect(out _), Is.False);
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator InvalidSnapshotLeavesForceDamageCooldownAndRecoilUntouched()
+        {
+            IsolateAim();
+            var target = AimTarget("Blocked", 0, 10, .3f);
+            var receiver = target.gameObject.AddComponent<DamageReceiver>();
+            AssertSelection(target);
+            var cover = GameObject.CreatePrimitive(PrimitiveType.Cube); temporary.Add(cover);
+            cover.transform.position = Vector3.Lerp(targeting.Origin, target.AimPoint, .5f);
+            cover.transform.localScale = Vector3.one * 2; Physics.SyncTransforms();
+            Vector3 velocity = motor.Velocity;
+            int impacts = 0; target.Impacted += _ => impacts++;
+            Assert.That(targeting.TryValidate(target, out _), Is.False);
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.InvalidTarget));
+            Assert.That(ability.Ready, Is.True); Assert.That(ability.ActivationCount, Is.Zero);
+            Assert.That(motor.Velocity, Is.EqualTo(velocity)); Assert.That(target.Body.linearVelocity, Is.EqualTo(Vector3.zero));
+            Assert.That(impacts, Is.Zero);
+            Assert.That(receiver.Health.Current, Is.EqualTo(receiver.Health.Maximum));
+            Object.DestroyImmediate(cover); PlaceAimTarget(target, 0, 30);
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.InvalidTarget));
+            Assert.That(ability.Ready, Is.True); Assert.That(motor.Velocity, Is.EqualTo(velocity));
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator ReticleNeutralCandidateActivationAndDisableClearTransientState()
+        {
+            IsolateAim();
+            var feedback = Object.FindFirstObjectByType<TargetFeedback>();
+            Assert.That(targeting.TrySelect(out _), Is.False);
+            Assert.That(feedback.Visible, Is.True); Assert.That(feedback.State, Is.EqualTo(ReticleState.Neutral));
+            Assert.That(feedback.GetComponent<LineRenderer>(), Is.Null, "No target-bound renderer remains on the prefab");
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.InvalidTarget));
+            var target = AimTarget("Pulse", 0, 10, .3f); AssertSelection(target);
+            Assert.That(feedback.State, Is.EqualTo(ReticleState.Candidate));
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.Activated));
+            Assert.That(feedback.State, Is.EqualTo(ReticleState.Activation));
+            targeting.Suspended = true;
+            Assert.That(feedback.Visible, Is.False); Assert.That(feedback.State, Is.EqualTo(ReticleState.Neutral));
+            targeting.Suspended = false;
+            Assert.That(feedback.State, Is.EqualTo(ReticleState.Neutral));
+            targeting.enabled = false; feedback.enabled = false;
+            targeting.enabled = true; feedback.enabled = true;
+            Assert.That(targeting.Current, Is.Null); Assert.That(feedback.State, Is.EqualTo(ReticleState.Neutral));
+            yield return null;
+        }
+        [UnityTest]
+        public IEnumerator DirectMouseAndGamepadUseIdenticalPrimaryPowerRoute()
+        {
+            IsolateAim(); input.enabled = true;
+            var target = AimTarget("Direct input", 0, 10, .3f);
+            AssertSelection(target);
+            yield return Fire(); Assert.That(ability.LastTarget, Is.EqualTo(target)); Assert.That(ability.ActivationCount, Is.EqualTo(1));
+            var feedback = Object.FindFirstObjectByType<TargetFeedback>();
+            Assert.That(feedback.State, Is.EqualTo(ReticleState.Activation));
+            yield return Advance(ability.Settings.Cooldown + .1f);
+            target.Body.linearVelocity = Vector3.zero; target.Body.angularVelocity = Vector3.zero;
+            PlaceAimTarget(target, 0, 10); AssertSelection(target);
+            var mouse = InputSystem.AddDevice<Mouse>();
+            try
+            {
+                input.Actions.devices = new InputDevice[] { mouse }; input.Actions.bindingMask = InputBinding.MaskByGroup("KeyboardMouse");
+                InputSystem.QueueStateEvent(mouse, new MouseState().WithButton(MouseButton.Left));
+                yield return Advance(1f / 60);
+                InputSystem.QueueStateEvent(mouse, new MouseState()); yield return Advance(.02f);
+                Assert.That(ability.ActivationCount, Is.EqualTo(2)); Assert.That(ability.LastTarget, Is.EqualTo(target));
+                yield return Advance(.2f); Assert.That(feedback.State, Is.Not.EqualTo(ReticleState.Activation));
+            }
+            finally { InputSystem.RemoveDevice(mouse); }
+        }
+        [UnityTest]
+        public IEnumerator SceneReloadCreatesNeutralTransientState()
+        {
+            IsolateAim(); var target = AimTarget("Reload pulse", 0, 10, .3f); AssertSelection(target);
+            Assert.That(ability.TryActivate(), Is.EqualTo(ActivationResult.Activated));
+            Assert.That(Object.FindFirstObjectByType<TargetFeedback>().State, Is.EqualTo(ReticleState.Activation));
+            yield return SceneManager.LoadSceneAsync(SceneManager.GetActiveScene().buildIndex);
+            input = Object.FindFirstObjectByType<LocalPlayerInput>(); targeting = Object.FindFirstObjectByType<ContextualTargeting>();
+            input.SetPaused(true);
+            Assert.That(targeting.Current, Is.Null);
+            Assert.That(Object.FindFirstObjectByType<TargetFeedback>().State, Is.EqualTo(ReticleState.Neutral));
+            Assert.That(Object.FindFirstObjectByType<KineticVectorAbility>().ActivationCount, Is.Zero);
+        }
+        private void IsolateAim()
+        {
+            input.enabled = false; orbit.enabled = false; targeting.Suspended = false;
+            orbit.transform.SetPositionAndRotation(new Vector3(0, 100, 0), Quaternion.identity);
+            orbit.View.fieldOfView = 60; orbit.View.aspect = 1.6f;
+            var origin = new GameObject("Isolated force origin"); temporary.Add(origin); origin.transform.position = orbit.transform.position;
+            var data = new SerializedObject(targeting); data.FindProperty("origin").objectReferenceValue = origin.transform; data.ApplyModifiedPropertiesWithoutUndo();
+            Physics.SyncTransforms();
+        }
+        private PhysicalTarget AimTarget(string name, float radius, float depth, float size)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube); temporary.Add(go); go.name = name;
+            go.transform.localScale = Vector3.one * size;
+            var body = go.AddComponent<Rigidbody>(); body.useGravity = false;
+            var target = go.AddComponent<PhysicalTarget>(); PlaceAimTarget(target, radius, depth); return target;
+        }
+        private void PlaceAimTarget(PhysicalTarget target, float radius, float depth)
+        {
+            target.transform.position = orbit.View.ViewportToWorldPoint(new Vector3(.5f + radius / orbit.View.aspect, .5f, depth));
+            Physics.SyncTransforms();
+        }
+        private void AssertSelection(PhysicalTarget expected)
+        { Assert.That(targeting.TrySelect(out var selected), Is.True); Assert.That(selected.Target, Is.EqualTo(expected)); }
         [UnityTest]
         public IEnumerator IndirectPhysicalCollisionProducesReactionAndDamage()
         {

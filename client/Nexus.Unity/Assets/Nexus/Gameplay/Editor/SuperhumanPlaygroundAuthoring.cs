@@ -112,8 +112,8 @@ namespace Nexus.Gameplay.Editor
             var input = player.AddComponent<LocalPlayerInput>();
             Set(input, "inputTemplate", AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/Nexus/Input/NexusInput.inputactions"));
             Set(input, "motor", motor); Set(input, "orbit", orbit); Set(input, "primaryAbility", ability); Set(input, "targeting", targeting);
-            var ring = new GameObject("Contextual target indication"); ring.transform.SetParent(rig.transform); Line(ring, pulse, .025f);
-            var targetFeedback = ring.AddComponent<TargetFeedback>(); Set(targetFeedback, "targeting", targeting); Set(targetFeedback, "view", view);
+            var reticle = new GameObject("Centre reticle"); reticle.transform.SetParent(rig.transform);
+            var targetFeedback = reticle.AddComponent<TargetFeedback>(); Set(targetFeedback, "targeting", targeting); Set(targetFeedback, "view", view);
             var beam = new GameObject("Kinetic impulse feedback"); beam.transform.SetParent(rig.transform); Line(beam, pulse, .055f);
             var feedback = beam.AddComponent<KineticFeedback>(); Set(feedback, "ability", ability); Set(feedback, "muzzle", muzzle);
             var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(rig, PrefabPath, InteractionMode.AutomatedAction);

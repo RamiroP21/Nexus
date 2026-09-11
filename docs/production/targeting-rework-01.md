@@ -1,6 +1,6 @@
-# Production Targeting Rework 01 — Preparation
+# Production Targeting Rework 01 — Implementation
 
-Status: preparation only. No runtime, scene, prefab or Input Actions were changed by this mission.
+Status: implemented and technically validated. Human re-playtest remains pending; automated tests and camera renders do not establish final game feel.
 
 ## Why the current experience was rejected
 
@@ -14,12 +14,12 @@ It is an original third-person action-game interaction model, not a copy of anot
 
 ## Current implementation audit
 
-### Runtime scripts and ownership
+### Runtime scripts and ownership (implemented)
 
-- `Runtime/Interaction/ContextualTargeting.cs` owns candidate discovery, validation and scoring. It queries up to 128 colliders around the force origin, requires a Rigidbody-backed `PhysicalTarget`, rejects the owner and non-dynamic bodies, then validates range, a camera-forward half-angle, and two line-of-sight raycasts (camera and force origin).
-- `Runtime/Interaction/TargetingSettings.cs` currently configures `range = 24`, `halfAngle = 14°`, `distanceWeight = .12`, and a physics `queryMask`. Its score is `cameraAlignment - distanceWeight * distance/range`; alignment dominates distance, but the query is an origin-radius candidate set rather than a screen-space centre query.
-- `Runtime/Interaction/TargetFeedback.cs` calls `TrySelect` every `LateUpdate` and draws a 24-segment `LineRenderer` ring around the selected object's bounds. It is target-bound, persistent while valid, and has no candidate-state reticle or stability/hysteresis state.
-- `Runtime/Abilities/KineticVectorAbility.cs` calls `TrySelect` again at activation, applies the validated `ForceImpact`, optionally applies independent `Damage`, then applies recoil and consumes cooldown only after a receiver accepts the force.
+- `Runtime/Interaction/ContextualTargeting.cs` gives the camera-centre ray priority, then uses a bounded aspect-correct viewport assist query. It requires a Rigidbody-backed `PhysicalTarget`, rejects the owner and non-dynamic bodies, validates range, camera-forward half-angle and two line-of-sight raycasts, and retains a valid candidate only within release/switch hysteresis. Hierarchy order is the final deterministic tie-breaker within this local Unity presentation system.
+- `Runtime/Interaction/TargetingSettings.cs` keeps `range = 24`, `halfAngle = 14°`, `distanceWeight = .12` and the physics `queryMask`, adding centre/assist/release tolerances, bounded size allowance and switch margin. Initial values are centre `.025`, assist `.08`, release `.10`, size allowance `.015`, size assistance `.25` and switch margin `.015`.
+- `Runtime/Interaction/TargetFeedback.cs` is now a small screen-centre `OnGUI` reticle with `Neutral`, `Candidate` and `Activation` states. It has no target-bound renderer and clears when targeting is suspended, disabled, invalid or reloaded.
+- `Runtime/Abilities/KineticVectorAbility.cs` revalidates the selected target immediately before execution, then applies the validated `ForceImpact`, optional independent `Damage`, recoil and cooldown only after a receiver accepts the force.
 - `Runtime/Character/LocalPlayerInput.cs` reads the existing Input System actions and directly calls `primaryAbility.TryActivate()` on `PrimaryPower.WasPressedThisFrame()`. The motor and camera do not own targeting decisions.
 - `Runtime/Abilities/KineticFeedback.cs` draws a short transient world-space beam after successful execution. This is useful execution confirmation and should remain separate from selection feedback.
 
@@ -29,26 +29,26 @@ It is an original third-person action-game interaction model, not a copy of anot
 
 ### Existing tests and evidence
 
-`GameplayRulesTests.cs` covers configuration, health/cooldown rules, prefab references and absence of Experimental dependencies. `SuperhumanPlaytests.cs` covers selection, invalid candidates, cooldown, force/damage, movement and visual captures. It currently asserts that a target-bound `TargetFeedback` is visible, which must be replaced when the implementation is authorized. There is no current test for centre-vs-lateral priority, candidate hysteresis, deliberate camera retargeting or reticle state transitions.
+`GameplayRulesTests.cs` covers configuration, health/cooldown rules, prefab references and absence of Experimental dependencies. `SuperhumanPlaytests.cs` now covers selection, invalid candidates, cooldown, force/damage, movement, centre-vs-lateral priority, hysteresis, deliberate retargeting, direct input parity and reticle state transitions. Camera renders remain part of the evidence set.
 
-## Change map for the later implementation
+## Change map and implementation result
 
-| Area | Later action | Preparation decision |
+| Area | Implemented change | Decision / boundary |
 | --- | --- | --- |
-| `ContextualTargeting.cs` | Replace candidate query/scoring with camera-centre primary selection plus bounded soft-assist candidates and hysteresis. | Modify/reimplement; preserve `ValidatedTarget` and the activation-facing API where practical. |
-| `TargetingSettings.cs` | Add small screen tolerance, assist angle/strength, hysteresis hold/switch margins and candidate query limits. | Modify; keep range/query mask and avoid a generic lock-on configuration. |
-| `TargetFeedback.cs` | Replace target-bound ring with a small centre reticle state presenter. | Replace behavior in place or replace file; no world ring. |
+| `ContextualTargeting.cs` | Camera-centre primary selection plus bounded soft-assist candidates and hysteresis. | Preserves `ValidatedTarget` and the activation-facing API. |
+| `TargetingSettings.cs` | Small screen tolerances, bounded size allowance and hysteresis switch margin. | Keeps range/query mask; no generic lock-on configuration. |
+| `TargetFeedback.cs` | Small centre reticle with neutral/candidate/activation state presenter. | No world ring; no target geometry dependency. |
 | `KineticVectorAbility.cs` | Keep activation/effect/cooldown contract; consume the validated target from the new selector. | Intact except minimal integration if the selector API changes. |
 | `KineticFeedback.cs` | Keep transient impact beam/feedback. | Intact. |
-| `LocalPlayerInput.cs` | Keep direct `PrimaryPower` activation. | Intact except minimal reticle visibility wiring if needed. |
+| `LocalPlayerInput.cs` | Keep direct `PrimaryPower` activation. | Intact. |
 | `CharacterMotor.cs`, `ThirdPersonCamera.cs` | Preserve. | Intact; camera expresses intent through its existing forward direction. |
 | Force, damage, health, `ReactiveEntity` | Preserve. | Intact; no reason for targeting UX to affect effect contracts. |
-| Playground scene/prefab/Input Actions | Do not change in preparation. | Preserve; only later wiring may remove the ring component. |
-| Tests | Add the exact cases below during implementation. | Do not add tests in this preparation mission. |
+| Playground scene/prefab/Input Actions | Keep the scene and shared actions stable; remove only the obsolete feedback renderer. | Production prefab and authoring now create a `Centre reticle`; `NexusInput.inputactions` is unchanged. |
+| Tests | Add the exact cases below during implementation. | Delivered in `SuperhumanPlaytests.cs`; existing force, damage, health and movement coverage remains. |
 
-No file is proposed for deletion now. Obsolete ring-only code can be deleted only after the new reticle is implemented, references are migrated and tests prove no remaining consumer needs it.
+No gameplay file was deleted. The obsolete ring component and authoring call were removed after the reticle references were migrated and tests proved no remaining consumer needs a target-bound renderer.
 
-## Proposed minimal targeting algorithm
+## Implemented minimal targeting algorithm
 
 The selector should return either a validated candidate or no candidate. It should not become a lock-on state machine.
 
@@ -126,12 +126,12 @@ Record concrete observations and rejected cases; do not infer approval from auto
 - Direct activation must not accidentally reintroduce the old target-bound ring through stale prefab references.
 - Do not change CharacterMotor, ThirdPersonCamera, Force, Damage, Health or `ReactiveEntity` unless implementation evidence proves a minimal integration need.
 
-Out of scope: implementing or tuning runtime targeting, scene/prefab/input edits, combat, traversal, second ability, production VFX/audio, server/ECS, a general targeting framework, permanent lock-on, target cycling, RMB hold-to-aim and any new playtest content.
+Out of scope for this rework: combat, traversal, second ability, production VFX/audio, server/ECS, a general targeting framework, permanent lock-on, target cycling, RMB hold-to-aim and any new playtest content. Final tuning remains subject to human replay.
 
-## Validation and delivery for this preparation
+## Validation and delivery
 
-Because this mission changes documentation only, validation is static: inspect current scripts, input bindings, dependency direction and the documentation diff. No Unity tests, Play Mode, renders, build or .NET suite are required. The intended delivery is a docs-only commit:
+The first targeted run exposed a teardown `MissingReferenceException` when the new feedback observer outlived a temporary test origin; the selector now fails closed when its origin/owner is unavailable. The corrected targeted Unity production suite passed 13/13 and the complete EditMode/Play Mode regression passed 46/46 (0 failed, 0 skipped). Root `dotnet build Nexus.sln -c Release --no-restore` passed with 0 warnings/errors and `dotnet test Nexus.sln -c Release --no-build --no-restore` passed 211/211. The renders remain camera captures; a Game View inspection is still required to judge the screen-space reticle and final feel.
 
-`docs: define production targeting rework`
+The implementation deliberately preserves the existing `PrimaryPower` mouse-left/gamepad-right-trigger route, motor, camera, force, damage, health, reactive and collision contracts. No lock-on, target cycling, hold-to-aim or new input action was added. The old ring renderer was removed from the production prefab and authoring path.
 
-Working tree must contain only the two intentional documentation files, be clean after commit/push, and remain on `main`. No runtime or asset behavior is claimed to have changed.
+Human acceptance remains open until a fresh replay confirms camera intent, non-sticky assistance, unobtrusive reticle and unsurprising activation. The exact commit/push is governed by the active mission, not this implementation record.

@@ -27,7 +27,7 @@ namespace Nexus.Gameplay.Abilities
         {
             if (!isActiveAndEnabled || Time.timeScale <= 0 || targeting.Suspended) return ActivationResult.Unavailable;
             if (!Ready) return ActivationResult.CoolingDown;
-            if (!targeting.TrySelect(out var selected)) return ActivationResult.InvalidTarget;
+            if (!targeting.TrySelect(out var selected) || !targeting.TryValidate(selected.Target, out selected)) return ActivationResult.InvalidTarget;
             Vector3 direction = (selected.Point - targeting.Origin).normalized;
             var impact = new ForceImpact(direction * settings.Impulse, selected.Point);
             IForceReceiver receiver = selected.Target;
