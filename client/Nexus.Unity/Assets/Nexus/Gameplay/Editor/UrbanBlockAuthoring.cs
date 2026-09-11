@@ -16,6 +16,36 @@ namespace Nexus.Gameplay.Editor
     public static partial class SuperhumanPlaygroundAuthoring
     {
         public const string UrbanScenePath = Root + "/Scenes/UrbanBlock01.unity";
+        [MenuItem("Nexus/Production/Apply Living Block Continuity")]
+        public static void ApplyLivingBlockContinuity()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var scene = EditorSceneManager.OpenScene(UrbanScenePath);
+            if (GameObject.Find("Living block activity anchors")) return;
+            var anchors = new GameObject("Living block activity anchors").transform;
+            var incident = new GameObject("Market crossing incident boundary").transform;
+            incident.SetParent(anchors); incident.position = new Vector3(0, .05f, 5);
+            var situation = Object.FindFirstObjectByType<UrbanBlockSituation>();
+            Set(situation, "incidentAnchor", incident);
+            foreach (var civil in Object.FindObjectsByType<CivilianPresence>(FindObjectsSortMode.None).OrderBy(c => c.name))
+            {
+                var settings = new SerializedObject(civil);
+                var route = settings.FindProperty("activityAnchors"); route.arraySize = 2;
+                for (int i = 0; i < 2; i++)
+                {
+                    var anchor = new GameObject(civil.name + (i == 0 ? " - browse crossing" : " - wait at entrance")).transform;
+                    anchor.SetParent(anchors); anchor.position = civil.transform.position + Vector3.left * (i == 0 ? 1.3f : 0);
+                    route.GetArrayElementAtIndex(i).objectReferenceValue = anchor;
+                }
+                var recovery = new GameObject(civil.name + " - cautious courtyard return").transform;
+                recovery.SetParent(anchors);
+                var refuge = settings.FindProperty("refuge").objectReferenceValue as Transform;
+                recovery.position = refuge.position + Vector3.left * 1.3f;
+                settings.FindProperty("aftermathAnchor").objectReferenceValue = recovery;
+                settings.ApplyModifiedPropertiesWithoutUndo();
+            }
+            EditorSceneManager.SaveScene(scene);
+        }
         [MenuItem("Nexus/Production/Apply Urban Block 01 Legibility")]
         public static void ApplyUrbanLegibility()
         {

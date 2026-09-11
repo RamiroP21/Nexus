@@ -8,7 +8,7 @@
 - Objective: provide a reusable UrbanBlock01 scene where traversal, targeting, hostile pressure, civilian reaction, physical props and persistent consequence compose without changing the accepted core contracts.
 - Invariants: no Production → Experimental dependency; preserve 01A/01B/01C targeting, traversal, combat and reset behavior; no new package, Unity upgrade, navigation framework, server/ECS integration or 02B work.
 - Worker: one fresh GPT-6 Astra Low worker implemented the scene, runtime world components, editor authoring and focused tests. Luna performed validation, review, documentation and Git closure.
-- Status: **TECHNICAL VALIDATION: PASS**. **EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**.
+- Status: **TECHNICAL VALIDATION: PASS**. **EXPERIENTIAL VALIDATION: PASS (accepted human review)**.
 
 ## World composition
 
@@ -76,6 +76,40 @@ The pass used one fresh Astra Low worker for runtime presentation, authoring and
 
 **02A.1 TECHNICAL VALIDATION: PASS**
 
-**02A.1 EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+**02A.1 EXPERIENTIAL VALIDATION: PASS (accepted human review)**
 
-Human review remains required to judge whether the block reads naturally without QA labels, whether civilian/hostile roles and telegraphs are clear at play distance, and whether the two physical outcomes are immediately distinguishable. Final art, animation, VFX/audio pipelines and reticle tuning remain deferred. Do not start 02B.
+The 02A/02A.1 human review is accepted for this milestone. Final art, animation, VFX/audio pipelines and reticle tuning remain deferred. 02B is a separate continuity slice documented below.
+
+## 02B living block continuity
+
+02B adds only a bounded continuity layer to the accepted UrbanBlock01 scene. The block now has three local phases: `Calm`, `Incident` and `Aftermath`. The existing `UrbanSituationState` outcomes (`Quiet`, `Danger`, `Secured` and `SecuredWithCasualties`) remain unchanged and continue to own consequence semantics.
+
+### Calm life and authored activity
+
+At scene start the hostile is held in incident readiness and the block is `Calm`; no combat pressure or instant damage occurs. A spatial incident boundary at the market crossing gives the player time to walk the market, residential frontage and service route, including the existing vault/mantle shortcut, before activation. Each resident has two explicit local activity anchors and a short wait/walk loop. Movement is bounded, physical and authored in the scene; there is no scheduler, crowd system, pathfinding package or global routine model.
+
+### Interruption and hostile integration
+
+Entering the crossing boundary, a civilian alert, physical impact or hostile harm transitions the block to `Incident`. The hostile is released from its separate hold and its existing perception, telegraph, hazard, stagger and depletion rules run unchanged. Residents keep their current positions when normal activity is interrupted, then perceive local danger and flee toward their existing authored refuges. There is no countdown, popup, objective screen or cutscene, and activation itself does not damage the player.
+
+### Aftermath, return and reset
+
+Defeating the hostile transitions the phase to `Aftermath`. `Secured` residents remain sheltered initially and can make a short cautious move toward an authored aftermath anchor after a pause; `SecuredWithCasualties` retains injured/depleted residents, displaced props and the same cautious survivor behavior. Routine never revives residents, repositions props, reactivates the hostile or clears damage. The player remains in control, can leave and return, and observes the same outcome and post-crisis state. F8 restores the authored Calm baseline; F9 continues to expose phase/activity/outcome QA data without changing simulation or normal diegetic presentation.
+
+### Validation and evidence
+
+The focused UrbanBlock suite passed **12/12**: the original 10 02A/02A.1 journeys plus Calm activity/interruption and Aftermath cautious-return/persistence coverage. The complete Unity EditMode/Play Mode regression passed **69/69**, 0 failed and 0 skipped, on Unity 6000.3.2f1 with the repository graphical backend. Root validation passed `dotnet build Nexus.sln -c Release --no-restore` with 0 warnings/errors and `dotnet test Nexus.sln -c Release --no-build --no-restore` with **211/211** (Core 48, ECS 100, Simulation 59, Determinism 4). Logs contain only the known licensing access-token diagnostic and existing regression warnings; no new C# errors or unexpected exceptions were observed.
+
+GPU camera evidence is retained under `client/Nexus.Unity/Logs/UrbanBlock02A/`. The 02A/02A.1 captures cover the calm market/residential/service composition, traversal, incident, flee, hostile pressure, both outcomes, away/return and debug OFF/ON. 02B adds `02b-calm-local-activity.png`, `02b-activity-interrupted.png` and `02b-aftermath-survivor.png`, showing authored activity, interruption and continued post-crisis movement without QA overlays. These are camera renders, not a substitute for human play feel.
+
+The implementation used one fresh GPT-6 Astra Low worker for runtime, authoring and focused tests. Luna reviewed the diff, ran authoring, corrected no gameplay contract, restored the known incidental URP settings change, ran focused/full Unity and .NET validation, and completed this report. No second worker was required.
+
+### Debt, deviations and status
+
+The slice remains deliberately greybox. Final art, animation, audio/VFX, dialogue, navigation, schedules, economy, crowd behavior, save integration, server/ECS integration and new mechanics remain out of scope. Activity movement is intentionally local and Rigidbody-based, and visual evidence remains validation-only. No targeting, traversal, combat, damage/force, hazard deflection, outcome or debug-off contracts were intentionally changed.
+
+**02B TECHNICAL VALIDATION: PASS**
+
+**02B EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+
+Human play remains required to judge whether the block feels active before the incident, whether the transition interrupts a visible normality from multiple positions, and whether the aftermath communicates consequence while the city continues. Do not start 02C.

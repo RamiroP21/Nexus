@@ -44,7 +44,59 @@ namespace Nexus.Gameplay.Tests
         private void StepMotor(float seconds)
         { for (int i = 0; i < Mathf.CeilToInt(seconds * 60); i++) motor.Tick(Vector2.zero, false, false, 0, 1f / 60, Time.timeAsDouble + i / 60.0); }
         private void Engage()
-        { Place(new Vector3(0, .05f, 3)); hostile.Tick(.01f); block.Evaluate(); Assert.That(hostile.Target, Is.EqualTo(player)); }
+        { Place(new Vector3(0, .05f, 3)); block.Evaluate(); hostile.Tick(.01f); block.Evaluate(); Assert.That(hostile.Target, Is.EqualTo(player)); }
+
+        [UnityTest]
+        public IEnumerator CalmResidentsMoveLocallyAndCrossingInterruptsCurrentPositions()
+        {
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Calm));
+            var civil = block.Civilians[0]; Vector3 initial = civil.transform.position;
+            Assert.That(civil.ActivityAnchorCount, Is.EqualTo(2));
+            for (int i = 0; i < 240; i++) yield return new WaitForFixedUpdate();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Calm));
+            Assert.That(hostile.Target, Is.Null); Assert.That(hostile.AttackCount, Is.Zero);
+            Assert.That(Vector3.Distance(initial, civil.transform.position), Is.InRange(.3f, 1.6f));
+            CaptureFrame("02b-calm-local-activity", new Vector3(0, 3, -5), new Vector3(4, 1, 3));
+            Vector3 interrupted = civil.transform.position;
+            Engage();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Incident));
+            Assert.That(Vector3.Distance(interrupted, civil.transform.position), Is.LessThan(.02f));
+            civil.Tick(.02f);
+            Assert.That(civil.Activity, Is.EqualTo(CivilianActivity.Interrupted));
+            Assert.That(civil.State, Is.EqualTo(CivilianState.Fleeing));
+            CaptureFrame("02b-activity-interrupted", new Vector3(0, 3, -5), new Vector3(4, 1, 3));
+            LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator AftermathSurvivorsRecoverLocallyWithoutErasingInjuryOrReturnState()
+        {
+            Engage();
+            var injured = block.Civilians[0]; var survivor = block.Civilians[1];
+            injured.GetComponent<DamageReceiver>().Receive(new Damage(12));
+            for (int i = 0; i < 190; i++) yield return new WaitForFixedUpdate();
+            Assert.That(survivor.State, Is.EqualTo(CivilianState.Sheltered));
+            hostile.GetComponent<DamageReceiver>().Receive(new Damage(100)); block.Evaluate();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Aftermath));
+            Vector3 sheltered = survivor.transform.position;
+            for (int i = 0; i < 480; i++) yield return new WaitForFixedUpdate();
+            Assert.That(survivor.Activity, Is.EqualTo(CivilianActivity.Cautious));
+            Assert.That(Vector3.Distance(sheltered, survivor.transform.position), Is.InRange(.3f, 1f));
+            Assert.That(injured.Harmed, Is.True);
+            CaptureFrame("02b-aftermath-survivor", new Vector3(5, 3, -1), new Vector3(10, 1, 4));
+            Place(new Vector3(0, .05f, -16)); yield return null; Place(new Vector3(0, .05f, 3)); block.Evaluate();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Aftermath));
+            Assert.That(injured.Harmed, Is.True); Assert.That(survivor.Activity, Is.EqualTo(CivilianActivity.Cautious));
+            block.ToggleDebug(); block.ToggleDebug();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Aftermath));
+            block.ResetBlock();
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Calm));
+            Assert.That(injured.Harmed, Is.False); Assert.That(hostile.Target, Is.Null);
+            Assert.That(block.Civilians.All(c => c.Activity == CivilianActivity.Waiting), Is.True);
+            yield return null;
+            Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Calm));
+            LogAssert.NoUnexpectedReceived();
+        }
 
         [UnityTest]
         public IEnumerator DebugDefaultsOffTogglesWithoutChangingSituationOrSignage()

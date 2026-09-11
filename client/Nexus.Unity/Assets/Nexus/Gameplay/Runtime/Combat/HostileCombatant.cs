@@ -23,7 +23,7 @@ namespace Nexus.Gameplay.Combat
         private Vector3 spawn, aim;
         private Quaternion spawnRotation, visualRest;
         private float remaining, staggerProtection;
-        private bool acquired, halted;
+        private bool acquired, halted, incidentHeld;
         private Transform[] presentationParts;
         public Transform Visual => visual;
         private readonly RaycastHit[] hits = new RaycastHit[32];
@@ -32,6 +32,7 @@ namespace Nexus.Gameplay.Combat
         public bool HasLineOfSight { get; private set; }
         public int AttackCount { get; private set; }
         public int StaggerCount { get; private set; }
+        public bool Harmed => receiver.Health.Current < receiver.Health.Maximum;
         public TrainingHazard LastHazard { get; private set; }
         public float TelegraphSeconds => telegraphSeconds;
         public float RecoverySeconds => recoverySeconds;
@@ -60,7 +61,7 @@ namespace Nexus.Gameplay.Combat
         private void FixedUpdate() => Tick(Time.fixedDeltaTime);
         public void Tick(float dt)
         {
-            if (!isActiveAndEnabled || !float.IsFinite(dt) || dt <= 0 || halted || State == HostileState.Depleted) return;
+            if (!isActiveAndEnabled || !float.IsFinite(dt) || dt <= 0 || halted || incidentHeld || State == HostileState.Depleted) return;
             if (body.position.y < -8) { receiver.Receive(new Damage(receiver.Health.Current)); return; }
             staggerProtection = Mathf.Max(0, staggerProtection - dt);
             if (!target || target.Depleted) { acquired = false; SetState(HostileState.Idle); StopHorizontalMotion(); return; }
@@ -136,6 +137,9 @@ namespace Nexus.Gameplay.Combat
         private void SetState(HostileState state, float seconds = 0) { State = state; remaining = seconds; Present(); }
         public void Halt()
         { halted = true; acquired = false; if (State != HostileState.Depleted) SetState(HostileState.Idle); StopHorizontalMotion(); }
+        // A scene may hold this actor until its local incident starts. Combat rules stay unchanged.
+        public void SetIncidentHold(bool held)
+        { incidentHeld = held; if (held) StopHorizontalMotion(); }
         public void ResetCombatant()
         {
             halted = acquired = false; HasLineOfSight = false; remaining = staggerProtection = 0; AttackCount = StaggerCount = 0;
@@ -146,7 +150,7 @@ namespace Nexus.Gameplay.Combat
         private void Present()
         {
             if (!telegraph || !visual || !stateLabel) return;
-            telegraph.enabled = isActiveAndEnabled && !halted && State == HostileState.Telegraph;
+            telegraph.enabled = isActiveAndEnabled && !halted && !incidentHeld && State == HostileState.Telegraph;
             if (telegraph.enabled) { telegraph.SetPosition(0, muzzle.position); telegraph.SetPosition(1, aim); }
             stateLabel.text = $"HOSTILE  {receiver.Health.Current:0}\n{State.ToString().ToUpperInvariant()}";
             stateLabel.color = State == HostileState.Telegraph || State == HostileState.Attack ? new Color(1, .3f, .08f)
