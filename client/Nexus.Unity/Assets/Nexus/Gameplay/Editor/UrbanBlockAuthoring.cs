@@ -16,6 +16,44 @@ namespace Nexus.Gameplay.Editor
     public static partial class SuperhumanPlaygroundAuthoring
     {
         public const string UrbanScenePath = Root + "/Scenes/UrbanBlock01.unity";
+        [MenuItem("Nexus/Production/Apply Compound Crisis")]
+        public static void ApplyCompoundCrisis()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var scene = EditorSceneManager.OpenScene(UrbanScenePath);
+            if (Object.FindFirstObjectByType<CompoundCrisisPressure>()) return;
+            var situation = Object.FindFirstObjectByType<UrbanBlockSituation>();
+            var root = new GameObject("Compound crisis - local pressures").transform;
+            var steel = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Steel.mat");
+            var accent = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Safety trim.mat");
+            var wood = AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Pallet wood.mat");
+            var friction = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Root + "/Data/PlaygroundContact.physicMaterial");
+            Box("Service unit under load", new Vector3(-4.8f, .35f, -1), new Vector3(1.8f, .7f, 1.6f), steel, root);
+            var load = Crate("Service load - push clear of unit", new Vector3(-4.8f, 1.55f, -1), 3, wood, accent, root, friction);
+            var loadAnchor = new GameObject("Service load original position").transform; loadAnchor.SetParent(root); loadAnchor.position = load.position;
+            var cart = GameObject.Find("Delivery cart - clear residential exit").GetComponent<Rigidbody>();
+            Sign("SERVICE POWER / KEEP CLEAR", new Vector3(-4.8f, .45f, -1.82f), Quaternion.Euler(0, 180, 0), root, .06f);
+            var emergency = Box("Residential emergency beacon", new Vector3(7.2f, 2.7f, 2), new Vector3(.2f, .2f, .2f), accent, root, false).transform;
+            var warning = Box("Overload beacon", new Vector3(-4.8f, 2.7f, -1), new Vector3(.2f, .2f, .2f), accent, root, false).transform;
+            var damaged = Box("Service unit ruptured - persistent debris", new Vector3(-4.8f, .8f, -.2f), new Vector3(1.8f, .15f, 1), steel, root, false);
+            damaged.transform.rotation = Quaternion.Euler(25, 15, 30); damaged.SetActive(false);
+            // Child geometry retains its authored dimensions while the signal parent scales with urgency.
+            Transform Signal(Transform geometry)
+            {
+                var signal = new GameObject(geometry.name + " progression").transform; signal.SetParent(root); signal.position = geometry.position;
+                geometry.SetParent(signal, true); signal.gameObject.SetActive(false); return signal;
+            }
+            var pressure = root.gameObject.AddComponent<CompoundCrisisPressure>();
+            Set(pressure, "resident", Object.FindObjectsByType<CivilianPresence>(FindObjectsSortMode.None).OrderBy(c => c.name).First());
+            Set(pressure, "exitObstruction", cart); Set(pressure, "infrastructureLoad", load);
+            Set(pressure, "loadAnchor", loadAnchor);
+            Set(pressure, "emergencySignal", Signal(emergency)); Set(pressure, "infrastructureSignal", Signal(warning)); Set(pressure, "damagedInfrastructure", damaged);
+            Set(situation, "compoundPressure", pressure);
+            var serialized = new SerializedObject(situation); var bodies = serialized.FindProperty("resetBodies");
+            int next = bodies.arraySize; bodies.InsertArrayElementAtIndex(next); bodies.GetArrayElementAtIndex(next).objectReferenceValue = load;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorSceneManager.SaveScene(scene); AssetDatabase.SaveAssets();
+        }
         [MenuItem("Nexus/Production/Apply Living Block Continuity")]
         public static void ApplyLivingBlockContinuity()
         {

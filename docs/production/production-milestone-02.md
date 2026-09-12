@@ -110,6 +110,44 @@ The slice remains deliberately greybox. Final art, animation, audio/VFX, dialogu
 
 **02B TECHNICAL VALIDATION: PASS**
 
-**02B EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+**02B EXPERIENTIAL VALIDATION: PASS (accepted human review)**
 
-Human play remains required to judge whether the block feels active before the incident, whether the transition interrupts a visible normality from multiple positions, and whether the aftermath communicates consequence while the city continues. Do not start 02C.
+The 02B human review is accepted for this milestone. The next authorized step is the integrated 02C slice documented below.
+
+## 02C compound urban crisis vertical slice
+
+02C composes the accepted block systems into one bounded crisis rather than adding another microphase. The intended loop is `NORMALITY → WARNING → COMPOUND CRISIS → PRIORITY/ROUTING → PLAYER ACTION → WORLD REACTION → TRADE-OFF → CONSEQUENCE → AFTERMATH → CONTINUED EXPLORATION`.
+
+### Phase model and warning
+
+`UrbanBlockSituation` now owns a local `Calm`, `Warning`, `Incident` and `Aftermath` phase. Calm preserves the 02B authored activities and traversal. Entering the existing incident boundary produces a four-second diegetic Warning: the hostile remains held, the two pressure beacons become visible, and player control is unchanged. After Warning, all three pressures begin together; there is no countdown HUD, objective menu, popup or cutscene.
+
+### Compound pressure architecture
+
+`CompoundCrisisPressure` is an opt-in scene component with independent component outcomes and progress. Pressure A remains the existing 01C `HostileCombatant` (perception, positioning, telegraph, hazards, stagger and depletion unchanged). Pressure B is a localized resident emergency using the existing shelter route and delivery obstruction: the resident can be protected by clearing the physical route, otherwise the deadline produces a casualty. Pressure C is a separate service-unit load: the authored load can be moved clear with the existing physical force contract, otherwise the unit reaches a visible degraded/ruptured state with persistent debris. B and C run concurrently, with separate clocks and outcomes; resolving one does not resolve another.
+
+The scene keeps the three pressures at distinct points of the existing block. The same Kinetic Vector contract therefore serves combat (A), rescue/route clearance (B) and infrastructure/load manipulation (C). Existing vault, mantle and elevated shortcut remain the traversal route between pressures; no traversal mechanic or navigation package was added. Physical composition permits natural cross-interactions such as hazards meeting cover/props and displaced loads changing access.
+
+### Priorities, civilians and outcomes
+
+Focused journeys cover A-first, C-first with switching, and B+C-first before A, plus a continuous mixed run. Pressure progress persists while the player changes priority; no first-choice hard-lock is introduced. Residents retain local 02B states and respond from their actual positions. The aggregate does not use a permutation enum: hostile, civilian and infrastructure results remain separate (`Pending`, `Active`, `Resolved`, `Failed`) and combine into the existing secured/casualty semantics. Aftermath accepts excellent, imperfect and casualty/damaged results; hostile state, resident injury, displaced props and ruptured infrastructure remain visible, and the player can leave and return without reset.
+
+### Reset, QA and validation
+
+F8 resets the player, hostile, civilians, pressure actors, load, props, progress and damaged infrastructure to Calm. F9 exposes phase plus A/B/C status and progress while leaving simulation untouched and preserving the debug-off diegetic baseline. Targeting continues to use camera intent with no hidden type priority.
+
+The compound focused suite passed **4/4**, including warning-before-incident, pressure independence, priority switching, favorable/imperfect outcomes, persistence/return and a continuous integrated journey. The 02B focused suite remained **12/12** after opt-in isolation. The complete Unity regression passed **73/73**, 0 failed and 0 skipped, on Unity 6000.3.2f1 with the repository graphical backend. Root validation passed `dotnet build Nexus.sln -c Release --no-restore` with 0 warnings/errors and `dotnet test Nexus.sln -c Release --no-build --no-restore` with **211/211** (Core 48, ECS 100, Simulation 59, Determinism 4). Logs contain only the known licensing access-token diagnostic and existing intentional regression warnings; no new C# errors or unexpected exceptions were observed.
+
+GPU evidence remains under `client/Nexus.Unity/Logs/UrbanBlock02A/`: 02C adds `02c-warning.png`, `02c-three-pressures.png`, `02c-infrastructure-resolved.png`, `02c-civilian-fails-infrastructure-stable.png`, `02c-imperfect-aftermath.png`, `02c-favorable-aftermath.png` and `02c-continuous-aftermath.png`. Combined with the accepted 02A/02A.1/02B captures, the set covers Calm life, Warning, three-pressure overview, hostile pressure, civilian emergency, infrastructure emergency, traversal, degrading pressure while handling another, systemic physical aftermath, favorable/imperfect/casualty outcomes, away/return and one F9 reference. Captures are GPU camera renders, not proof of fun.
+
+The implementation used one fresh GPT-6 Astra Low worker for the compound runtime, authoring and focused tests. Luna integrated the authoring method, added one bounded continuous/capture test pass, restored the known incidental URP settings change after Unity runs, reviewed serialized references/diff, ran focused/full Unity and .NET validation, and completed documentation. Worker 2 was not needed.
+
+### Debt, continuous play and status
+
+The slice remains greybox and intentionally local: no second power, hostile archetype, mission/quest HUD, global scheduler, crowd/traffic, save-to-disk, dialogue, production art/animation/audio/VFX, Blender/external assets, package upgrades or Server/ECS bridge. Automated continuous coverage validates one uninterrupted integrated journey with real Play Mode physics and return/reset, but it is a short simulated validation flow rather than the requested 8–12 minute normal-player session. A human should play the complete slice for several minutes to judge pacing, readability, priority pressure, routing value and whether consequence feels earned.
+
+**02C TECHNICAL VALIDATION: PASS**
+
+**02C EXPERIENTIAL VALIDATION: PENDING HUMAN PLAYTEST**
+
+After this mission the next action is human playtest, not another production implementation mission. Do not start 02D.

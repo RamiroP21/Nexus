@@ -29,6 +29,10 @@ namespace Nexus.Gameplay.Tests
         public IEnumerator Setup()
         {
             EditorSceneManager.OpenScene(SuperhumanPlaygroundAuthoring.UrbanScenePath);
+            // Keep the accepted 02B fixture independent of the opt-in 02C pressure composition.
+            var baseline = new SerializedObject(Object.FindFirstObjectByType<UrbanBlockSituation>());
+            baseline.FindProperty("compoundPressure").objectReferenceValue = null;
+            baseline.ApplyModifiedPropertiesWithoutUndo();
             yield return new EnterPlayMode();
             capture = Time.captureDeltaTime; Time.captureDeltaTime = 1f / 60;
             block = Object.FindFirstObjectByType<UrbanBlockSituation>(); player = Object.FindFirstObjectByType<PlayerVitality>();

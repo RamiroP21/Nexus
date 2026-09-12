@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace Nexus.Gameplay.World
 {
     public enum UrbanSituationState { Quiet, Danger, Secured, SecuredWithCasualties }
-    public enum UrbanBlockPhase { Calm, Incident, Aftermath }
+    public enum UrbanBlockPhase { Calm, Incident, Aftermath, Warning }
     public sealed class UrbanBlockSituation : MonoBehaviour
     {
         [SerializeField] private PlayerVitality player;
@@ -15,6 +15,10 @@ namespace Nexus.Gameplay.World
         [SerializeField] private TextMesh streetNotice;
         [SerializeField] private Transform incidentAnchor;
         [SerializeField, Min(.1f)] private float incidentRadius = 5;
+        [SerializeField] private CompoundCrisisPressure compoundPressure;
+        [SerializeField, Min(.1f)] private float warningSeconds = 4;
+        private float warningRemaining;
+        public CompoundCrisisPressure CompoundPressure => compoundPressure;
         private Vector3[] positions;
         private Quaternion[] rotations;
         private RigidbodyConstraints[] constraints;
@@ -50,9 +54,27 @@ namespace Nexus.Gameplay.World
         private void Start() { hostile.SetIncidentHold(true); Evaluate(); }
         private void Update()
         {
-            Evaluate();
+            Tick(Time.deltaTime);
             if ((Application.isEditor || Debug.isDebugBuild) && Keyboard.current != null && Keyboard.current.f9Key.wasPressedThisFrame) ToggleDebug();
             if ((Application.isEditor || Debug.isDebugBuild) && Keyboard.current != null && Keyboard.current.f8Key.wasPressedThisFrame) ResetBlock();
+        }
+        public void Tick(float dt)
+        {
+            if (!isActiveAndEnabled || dt <= 0 || !float.IsFinite(dt)) return;
+            Evaluate();
+            if (Phase == UrbanBlockPhase.Warning)
+            {
+                warningRemaining -= dt;
+                if (warningRemaining <= 0) BeginIncident();
+            }
+            else if (Phase == UrbanBlockPhase.Incident && compoundPressure) compoundPressure.Tick(dt);
+            Evaluate();
+        }
+        private void BeginIncident()
+        {
+            Phase = UrbanBlockPhase.Incident; hostile.SetIncidentHold(false);
+            if (compoundPressure) compoundPressure.Begin();
+            foreach (var civil in civilians) civil.SetBlockPhase(Phase);
         }
         public void Evaluate()
         {
@@ -62,21 +84,23 @@ namespace Nexus.Gameplay.World
             if (Phase == UrbanBlockPhase.Calm && (alerted || hostile.Harmed || hostile.StaggerCount > 0
                 || (incidentAnchor && Vector3.Distance(player.transform.position, incidentAnchor.position) <= incidentRadius)))
             {
-                Phase = UrbanBlockPhase.Incident; hostile.SetIncidentHold(false);
-                foreach (var civil in civilians) civil.SetBlockPhase(Phase);
+                if (compoundPressure)
+                { Phase = UrbanBlockPhase.Warning; warningRemaining = warningSeconds; compoundPressure.Warn(); foreach (var civil in civilians) civil.SetBlockPhase(Phase); }
+                else BeginIncident();
             }
-            if (Phase == UrbanBlockPhase.Incident && hostile.State == HostileState.Depleted)
+            if (Phase == UrbanBlockPhase.Incident && hostile.State == HostileState.Depleted && (!compoundPressure || compoundPressure.Complete))
             {
                 Phase = UrbanBlockPhase.Aftermath;
                 foreach (var civil in civilians) civil.SetBlockPhase(Phase);
             }
-            if (hostile.State == HostileState.Depleted) State = harmed > 0 ? UrbanSituationState.SecuredWithCasualties : UrbanSituationState.Secured;
-            else if (Phase == UrbanBlockPhase.Incident) State = UrbanSituationState.Danger;
+            if (Phase == UrbanBlockPhase.Aftermath) State = harmed > 0 ? UrbanSituationState.SecuredWithCasualties : UrbanSituationState.Secured;
+            else if (Phase == UrbanBlockPhase.Incident || Phase == UrbanBlockPhase.Warning) State = UrbanSituationState.Danger;
             streetNotice.text = State == UrbanSituationState.Quiet ? "MERCADO / RESIDENCIAS\nDelivery entrance obstructed"
                 : State == UrbanSituationState.Danger ? $"DANGER IN THE STREET\nResidents sheltered: {sheltered}/{civilians.Length}   Injured: {harmed}\nClear the delivery cart / stop the hostile"
                 : harmed > 0 ? $"STREET SECURED - RESIDENTS INJURED: {harmed}\nThe damage remains. You can return."
                 : $"STREET SECURED - NO RESIDENTS INJURED\nResidents sheltered: {sheltered}/{civilians.Length}";
             streetNotice.color = harmed > 0 ? new Color(1, .35f, .15f) : State == UrbanSituationState.Secured ? Color.green : Color.white;
+            if (compoundPressure) streetNotice.text += $"\nA Hostile: {hostile.State} | B Resident: {compoundPressure.Civilian} {compoundPressure.CivilianProgress:P0}\nC Service unit: {compoundPressure.Infrastructure} {compoundPressure.InfrastructureProgress:P0}";
         }
         public void ResetBlock()
         {
@@ -91,6 +115,8 @@ namespace Nexus.Gameplay.World
             }
             player.ResetTraining(); hostile.ResetCombatant(); hostile.SetIncidentHold(true);
             foreach (var civil in civilians) civil.ResetCivilian();
+            if (compoundPressure) compoundPressure.ResetPressure();
+            warningRemaining = 0;
             Phase = UrbanBlockPhase.Calm; State = UrbanSituationState.Quiet; Physics.SyncTransforms(); Evaluate();
         }
         private void OnGUI()
