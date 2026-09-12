@@ -4407,6 +4407,7 @@ GameObject:
   - component: {fileID: 727367668}
   - component: {fileID: 727367666}
   - component: {fileID: 727367667}
+  - component: {fileID: 727367670}
   m_Layer: 0
   m_Name: Service load - push clear of unit
   m_TagString: Untagged
@@ -4491,6 +4492,18 @@ Transform:
   - {fileID: 1034426710}
   m_Father: {fileID: 2038473917}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &727367670
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 727367665}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &761372317
 GameObject:
   m_ObjectHideFlags: 0
@@ -5822,6 +5835,7 @@ GameObject:
   - component: {fileID: 1015449156}
   - component: {fileID: 1015449158}
   - component: {fileID: 1015449157}
+  - component: {fileID: 1015449163}
   m_Layer: 0
   m_Name: Steel waste container - movable cover
   m_TagString: Untagged
@@ -5975,6 +5989,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 660451784}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1015449163
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1015449155}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1025613826
 GameObject:
   m_ObjectHideFlags: 0
@@ -5987,6 +6013,7 @@ GameObject:
   - component: {fileID: 1025613829}
   - component: {fileID: 1025613830}
   - component: {fileID: 1025613828}
+  - component: {fileID: 1025613831}
   m_Layer: 0
   m_Name: Delivery cart - clear residential exit
   m_TagString: Untagged
@@ -6071,6 +6098,18 @@ Rigidbody:
   m_Interpolate: 1
   m_Constraints: 0
   m_CollisionDetection: 2
+--- !u!114 &1025613831
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1025613826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1028229796
 GameObject:
   m_ObjectHideFlags: 0
@@ -6199,6 +6238,7 @@ GameObject:
   - component: {fileID: 1030926509}
   - component: {fileID: 1030926508}
   - component: {fileID: 1030926515}
+  - component: {fileID: 1030926516}
   m_Layer: 0
   m_Name: Physical hazard template
   m_TagString: Untagged
@@ -6473,6 +6513,18 @@ TrailRenderer:
   m_Autodestruct: 0
   m_Emitting: 1
   m_ApplyActiveColorSpace: 1
+--- !u!114 &1030926516
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1030926507}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1033036422
 GameObject:
   m_ObjectHideFlags: 0

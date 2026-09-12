@@ -29,6 +29,7 @@ namespace Nexus.Gameplay.Tests
         private ThirdPersonCamera orbit;
         private ContextualTargeting targeting;
         private KineticVectorAbility ability;
+        private KineticGraspAbility grasp;
         private Gamepad pad;
         private InputSettings.UpdateMode previousMode;
         private InputSettings.BackgroundBehavior previousBackground;
@@ -49,7 +50,8 @@ namespace Nexus.Gameplay.Tests
             pad = InputSystem.AddDevice<Gamepad>(); input = Object.FindFirstObjectByType<LocalPlayerInput>();
             motor = Object.FindFirstObjectByType<CharacterMotor>(); orbit = Object.FindFirstObjectByType<ThirdPersonCamera>();
             targeting = Object.FindFirstObjectByType<ContextualTargeting>(); ability = Object.FindFirstObjectByType<KineticVectorAbility>();
-            Assert.That(input && motor && orbit && targeting && ability, Is.True);
+            grasp = Object.FindFirstObjectByType<KineticGraspAbility>();
+            Assert.That(input && motor && orbit && targeting && ability && grasp, Is.True);
             input.Actions.devices = new InputDevice[] { pad }; input.Actions.bindingMask = InputBinding.MaskByGroup("Gamepad"); input.SetPaused(false);
             yield return Advance(.3f);
         }
@@ -298,6 +300,19 @@ namespace Nexus.Gameplay.Tests
             }
             finally { InputSystem.RemoveDevice(mouse); }
         }
+
+        [UnityTest]
+        public IEnumerator SecondaryPowerAcquiresAndReleasesThroughGamepad()
+        {
+            IsolateAim();
+            var target = AimTarget("Direct grasp input", 0, 6, .6f);
+            AssertSelection(target);
+            input.enabled = true; input.SetPaused(false);
+            State(new GamepadState { leftTrigger = 1 }); yield return Advance(1f / 60);
+            Assert.That(grasp.IsHolding, Is.True);
+            State(new GamepadState()); yield return Advance(.05f);
+            Assert.That(grasp.IsHolding, Is.False);
+        }
         [UnityTest]
         public IEnumerator SceneReloadCreatesNeutralTransientState()
         {
@@ -325,7 +340,7 @@ namespace Nexus.Gameplay.Tests
             var go = GameObject.CreatePrimitive(PrimitiveType.Cube); temporary.Add(go); go.name = name;
             go.transform.localScale = Vector3.one * size;
             var body = go.AddComponent<Rigidbody>(); body.useGravity = false;
-            var target = go.AddComponent<PhysicalTarget>(); PlaceAimTarget(target, radius, depth); return target;
+            var target = go.AddComponent<PhysicalTarget>(); go.AddComponent<Graspable>(); PlaceAimTarget(target, radius, depth); return target;
         }
         private void PlaceAimTarget(PhysicalTarget target, float radius, float depth)
         {

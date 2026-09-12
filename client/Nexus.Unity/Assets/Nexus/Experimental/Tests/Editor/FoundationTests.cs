@@ -41,14 +41,14 @@ namespace Nexus.Unity.Tests
         }
 
         [Test]
-        public void InputDefinesSixSemanticActionsAndBothControlSchemes()
+        public void InputDefinesSevenSemanticActionsAndBothControlSchemes()
         {
             var asset = AssetDatabase.LoadAssetAtPath<InputActionAsset>(InputPath);
             Assert.That(asset, Is.Not.Null);
             Assert.That(asset.actionMaps.Count, Is.EqualTo(1));
             var map = asset.FindActionMap("Gameplay", true);
             Assert.That(map.actions.Select(action => action.name), Is.EquivalentTo(
-                new[] { "Move", "Look", "Jump", "Sprint", "PrimaryPower", "Pause" }));
+                new[] { "Move", "Look", "Jump", "Sprint", "PrimaryPower", "SecondaryPower", "Pause" }));
             Assert.That(map["Move"].expectedControlType, Is.EqualTo("Vector2"));
             Assert.That(map["Look"].expectedControlType, Is.EqualTo("Vector2"));
             Assert.That(asset.controlSchemes.Select(scheme => scheme.name),

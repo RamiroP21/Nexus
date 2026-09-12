@@ -184,8 +184,8 @@ namespace Nexus.Gameplay.Editor
             var cart = Crate("Delivery cart - clear residential exit", new Vector3(6.2f, .85f, 2), 3, wood, accent, props, friction);
             var coverObject = Box("Steel waste container - movable cover", new Vector3(-3, 1, 7), new Vector3(2.2f, 2, 1.4f), steel, props);
             var cover = coverObject.AddComponent<Rigidbody>(); ConfigureBody(cover, 7); cover.constraints = RigidbodyConstraints.FreezeAll;
-            coverObject.AddComponent<PhysicalTarget>(); coverObject.AddComponent<ImpactBarrier>();
-            var hazard = Object.Instantiate(acceptedHazard); hazard.name = "Physical hazard template"; hazard.gameObject.SetActive(false);
+            coverObject.AddComponent<PhysicalTarget>(); coverObject.AddComponent<Graspable>(); coverObject.AddComponent<ImpactBarrier>();
+            var hazard = Object.Instantiate(acceptedHazard); hazard.name = "Physical hazard template"; hazard.gameObject.AddComponent<Graspable>(); hazard.gameObject.SetActive(false);
             var hostile = Object.Instantiate(acceptedHostile); hostile.name = "Street hostile"; hostile.transform.SetParent(null);
             hostile.transform.SetPositionAndRotation(new Vector3(0, .05f, 11), Quaternion.Euler(0, 180, 0));
             Set(hostile, "target", player); Set(hostile, "hazardTemplate", hazard);

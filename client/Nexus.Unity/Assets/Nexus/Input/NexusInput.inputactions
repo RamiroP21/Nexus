@@ -52,6 +52,15 @@
                     "initialStateCheck": false
                 },
                 {
+                    "name": "SecondaryPower",
+                    "type": "Button",
+                    "id": "d6ca4bf8-cbd7-4b4d-8e38-cf8bfb4df1d0",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
                     "name": "Pause",
                     "type": "Button",
                     "id": "59f70474-4782-44c0-aef9-07be2cfd167a",
@@ -213,6 +222,28 @@
                     "processors": "",
                     "groups": "Gamepad",
                     "action": "PrimaryPower",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8f5fce70-fc93-4c3c-94f2-cc6cfb12f9d8",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "KeyboardMouse",
+                    "action": "SecondaryPower",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c292621f-38c0-466e-80a3-9e2c5b87b8b4",
+                    "path": "<Gamepad>/leftTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "SecondaryPower",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },

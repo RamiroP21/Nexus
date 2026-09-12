@@ -1,3 +1,4 @@
+using Nexus.Gameplay.Abilities;
 using Nexus.Gameplay.Combat;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -23,6 +24,7 @@ namespace Nexus.Gameplay.World
         private Quaternion[] rotations;
         private RigidbodyConstraints[] constraints;
         private Renderer[] debugLabels;
+        private KineticGraspAbility grasp;
         public bool DebugVisible { get; private set; }
         public UrbanSituationState State { get; private set; }
         public UrbanBlockPhase Phase { get; private set; }
@@ -42,6 +44,7 @@ namespace Nexus.Gameplay.World
             foreach (var civil in civilians)
                 foreach (var label in civil.GetComponentsInChildren<TextMesh>(true)) labels.Add(label.GetComponent<Renderer>());
             debugLabels = labels.ToArray();
+            grasp = player.GetComponent<KineticGraspAbility>();
             SetDebugVisible(false);
         }
         public void SetDebugVisible(bool visible)
@@ -123,6 +126,7 @@ namespace Nexus.Gameplay.World
         {
             if (!DebugVisible) return;
             GUI.Label(new Rect(20, Screen.height - 110, 850, 90), "URBAN BLOCK 01 | " + Phase + " | Market / Homes / Service alley\n" + streetNotice.text
+                + (grasp && grasp.Settings ? $"\nGRASP: {(grasp.IsHolding ? "Holding " + grasp.HeldTarget.name : "Ready")} | acquire {grasp.Settings.AcquireRange:0.0}m | hold {grasp.Settings.HoldDistance:0.0}m | break {grasp.Settings.BreakDistance:0.0}m" : "")
                 + ((Application.isEditor || Debug.isDebugBuild) ? "\nF8: reset block | F9: hide QA" : ""));
         }
     }

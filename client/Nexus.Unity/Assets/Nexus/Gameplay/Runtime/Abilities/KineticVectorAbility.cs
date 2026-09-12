@@ -12,6 +12,7 @@ namespace Nexus.Gameplay.Abilities
         [SerializeField] private KineticVectorSettings settings;
         [SerializeField] private ContextualTargeting targeting;
         [SerializeField] private CharacterMotor motor;
+        [SerializeField] private KineticGraspAbility grasp;
         private readonly AbilityCooldown cooldown = new();
         public event Action<ForceImpact> Executed;
         public KineticVectorSettings Settings => settings;
@@ -32,6 +33,7 @@ namespace Nexus.Gameplay.Abilities
             var impact = new ForceImpact(direction * settings.Impulse, selected.Point);
             IForceReceiver receiver = selected.Target;
             if (!receiver.ReceiveForce(impact)) return ActivationResult.InvalidTarget;
+            if (grasp) grasp.ReleaseForVector(selected.Target);
             cooldown.TryConsume(Time.timeAsDouble, settings.Cooldown);
             if (settings.Damage > 0 && selected.Target.TryGetComponent<DamageReceiver>(out var damage)) damage.Receive(new Damage(settings.Damage));
             motor.AddImpulse(-direction * settings.Recoil);

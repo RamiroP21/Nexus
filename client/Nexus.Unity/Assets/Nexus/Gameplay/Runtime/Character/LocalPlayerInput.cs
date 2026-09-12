@@ -14,6 +14,8 @@ namespace Nexus.Gameplay.Character
         [SerializeField] private ThirdPersonCamera orbit;
         [SerializeField] private KineticVectorAbility primaryAbility;
         [SerializeField] private ContextualTargeting targeting;
+        [SerializeField] private KineticGraspAbility graspAbility;
+        private InputAction grasp;
         private InputAction move, look, jump, sprint, primary, pause;
         private float priorTimeScale;
         private CursorLockMode priorLock;
@@ -32,6 +34,7 @@ namespace Nexus.Gameplay.Character
             move = Actions.FindAction("Gameplay/Move", true); look = Actions.FindAction("Gameplay/Look", true);
             jump = Actions.FindAction("Gameplay/Jump", true); sprint = Actions.FindAction("Gameplay/Sprint", true);
             primary = Actions.FindAction("Gameplay/PrimaryPower", true); pause = Actions.FindAction("Gameplay/Pause", true);
+            grasp = Actions.FindAction("Gameplay/SecondaryPower", false);
         }
         private void OnEnable()
         {
@@ -54,6 +57,11 @@ namespace Nexus.Gameplay.Character
                 return;
             }
             motor.Tick(move.ReadValue<Vector2>(), sprint.IsPressed(), jump.WasPressedThisFrame(), orbit.Yaw, Time.deltaTime, Time.timeAsDouble);
+            if (graspAbility && grasp != null)
+            {
+                if (grasp.WasPressedThisFrame()) graspAbility.TryAcquire();
+                if (!grasp.IsPressed()) graspAbility.Release();
+            }
             if (primary.WasPressedThisFrame()) primaryAbility.TryActivate();
         }
         public void SetPaused(bool value)

@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace Nexus.Gameplay.Interaction
 {
-    public enum ReticleState { Neutral, Candidate, Activation }
+    public enum ReticleState { Neutral, Candidate, Activation, Holding }
 
     // Runs after the production camera's LateUpdate; selection describes the rendered camera.
     [DefaultExecutionOrder(100)]
@@ -14,16 +14,19 @@ namespace Nexus.Gameplay.Interaction
         [SerializeField, Range(2, 8)] private float radiusPixels = 4;
         [SerializeField, Range(.05f, .3f)] private float activationDuration = .12f;
         private KineticVectorAbility ability;
+        private KineticGraspAbility grasp;
         private double activationUntil;
         public bool Visible => isActiveAndEnabled && targeting && targeting.isActiveAndEnabled
             && !targeting.Suspended && view && view.isActiveAndEnabled && Time.timeScale > 0;
         public ReticleState State => !Visible ? ReticleState.Neutral
+            : grasp && grasp.IsHolding ? ReticleState.Holding
             : Time.timeAsDouble < activationUntil ? ReticleState.Activation
             : targeting.Current ? ReticleState.Candidate : ReticleState.Neutral;
         private void Awake()
         {
             if (!targeting || !view) { Debug.LogError("TargetFeedback requires targeting and camera.", this); enabled = false; return; }
             ability = targeting.GetComponent<KineticVectorAbility>();
+            grasp = targeting.GetComponent<KineticGraspAbility>();
         }
         private void OnEnable()
         {
@@ -57,7 +60,8 @@ namespace Nexus.Gameplay.Interaction
             GUI.DrawTexture(new Rect(x - radius - 1, y - 2, radius * 2 + 2, 4), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(x - 2, y - radius - 1, 4, radius * 2 + 2), Texture2D.whiteTexture);
             GUI.color = state == ReticleState.Neutral ? new Color(.85f, .88f, .9f, .7f)
-                : state == ReticleState.Candidate ? new Color(.45f, .95f, 1, .95f) : Color.white;
+                : state == ReticleState.Candidate ? new Color(.45f, .95f, 1, .95f)
+                : state == ReticleState.Holding ? new Color(.35f, 1, .8f, .98f) : Color.white;
             GUI.DrawTexture(new Rect(x - radius, y - 1, radius * 2, 2), Texture2D.whiteTexture);
             GUI.DrawTexture(new Rect(x - 1, y - radius, 2, radius * 2), Texture2D.whiteTexture);
             GUI.color = previous;

@@ -14,6 +14,7 @@ namespace Nexus.Gameplay.Combat
         public bool Depleted => receiver && receiver.Health.IsDepleted;
         public DamageReceiver Receiver => receiver;
         public bool ShowDiagnostics { get; set; } = true;
+        public event System.Action Resetting;
         private void Awake()
         { motor = GetComponent<CharacterMotor>(); receiver = GetComponent<DamageReceiver>(); spawn = transform.position; }
         private void OnEnable() { receiver.Changed += OnHealth; OnHealth(receiver.Health); }
@@ -28,6 +29,7 @@ namespace Nexus.Gameplay.Combat
         }
         public void ResetTraining()
         {
+            Resetting?.Invoke();
             motor.ResetMotion(spawn);
             receiver.ResetHealth();
         }

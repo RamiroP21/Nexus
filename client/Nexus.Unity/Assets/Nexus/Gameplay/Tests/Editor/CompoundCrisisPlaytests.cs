@@ -1,8 +1,10 @@
 using System.Collections;
 using System.IO;
+using Nexus.Gameplay.Abilities;
 using Nexus.Gameplay.Character;
 using Nexus.Gameplay.Combat;
 using Nexus.Gameplay.Editor;
+using Nexus.Gameplay.Interaction;
 using Nexus.Gameplay.World;
 using NUnit.Framework;
 using UnityEditor.SceneManagement;
@@ -118,6 +120,39 @@ namespace Nexus.Gameplay.Tests
             block.Hostile.GetComponent<DamageReceiver>().Receive(new Damage(100)); block.Evaluate();
             Assert.That(block.Phase, Is.EqualTo(UrbanBlockPhase.Aftermath));
             CaptureFrame("02c-favorable-aftermath", new Vector3(7, 6, 7), new Vector3(4, 1, 2));
+            yield return null; LogAssert.NoUnexpectedReceived();
+        }
+
+        [UnityTest]
+        public IEnumerator UrbanPropsExposeOptInGraspWithoutMakingPeopleTargets()
+        {
+            var grasp = Object.FindFirstObjectByType<KineticGraspAbility>();
+            Assert.That(grasp, Is.Not.Null);
+            Assert.That(pressure.ExitObstruction.GetComponent<Graspable>(), Is.Not.Null);
+            Assert.That(pressure.InfrastructureLoad.GetComponent<Graspable>(), Is.Not.Null);
+            Assert.That(block.Hostile.GetComponent<Graspable>(), Is.Null);
+            Assert.That(pressure.Resident.GetComponent<Graspable>(), Is.Null);
+
+            Begin();
+            Assert.That(pressure.Civilian, Is.EqualTo(PressureOutcome.Active));
+            Assert.That(pressure.Infrastructure, Is.EqualTo(PressureOutcome.Active));
+            var motor = Object.FindFirstObjectByType<CharacterMotor>();
+            var orbit = Object.FindFirstObjectByType<Nexus.Gameplay.CameraSystem.ThirdPersonCamera>(); orbit.enabled = false;
+            var targeting = Object.FindFirstObjectByType<ContextualTargeting>(); targeting.Suspended = false;
+            motor.ResetMotion(new Vector3(6.2f, .05f, -6));
+            var camera = Camera.main; camera.transform.position = new Vector3(6.2f, 2.2f, -4.5f); camera.transform.LookAt(pressure.ExitObstruction.position);
+            Physics.SyncTransforms();
+            Assert.That(grasp.TryAcquire(pressure.ExitObstruction.GetComponent<PhysicalTarget>()), Is.True);
+            yield return null;
+            Assert.That(Object.FindFirstObjectByType<TargetFeedback>().State, Is.EqualTo(ReticleState.Holding));
+            CaptureFrame("03-grasp-holding", new Vector3(10, 5, -3), new Vector3(6, 1, 1));
+            grasp.Release();
+            Assert.That(grasp.IsHolding, Is.False);
+            pressure.ExitObstruction.position += Vector3.forward * 4;
+            Physics.SyncTransforms(); block.Tick(.02f);
+            var residentBody = pressure.Resident.GetComponent<Rigidbody>(); residentBody.position = pressure.Resident.Refuge.position;
+            pressure.Resident.transform.position = residentBody.position; Physics.SyncTransforms(); pressure.Resident.Tick(.02f); block.Tick(.02f);
+            Assert.That(pressure.Civilian, Is.EqualTo(PressureOutcome.Resolved));
             yield return null; LogAssert.NoUnexpectedReceived();
         }
 

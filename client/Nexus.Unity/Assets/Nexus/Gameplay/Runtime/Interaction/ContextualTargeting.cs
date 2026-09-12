@@ -19,6 +19,10 @@ namespace Nexus.Gameplay.Interaction
         public event System.Action Cleared;
         public TargetingSettings Settings => settings;
         public Vector3 Origin => origin ? origin.position : default;
+        public Vector3 AimDirection => view ? view.transform.forward : transform.forward;
+        public bool HasLineOfSight(PhysicalTarget target) => isActiveAndEnabled && !Suspended && view && view.isActiveAndEnabled
+            && origin && owner && target && target.CanReceiveForce
+            && !Occluded(view.transform.position, target.AimPoint, target) && !Occluded(Origin, target.AimPoint, target);
         private bool suspended;
         public bool Suspended
         {

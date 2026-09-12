@@ -22,6 +22,58 @@ namespace Nexus.Gameplay.Editor
         public const string Root = "Assets/Nexus/Gameplay";
         public const string ScenePath = Root + "/Scenes/SuperhumanPlayground.unity";
         public const string PrefabPath = Root + "/Prefabs/SuperhumanPlayerRig.prefab";
+
+        [MenuItem("Nexus/Production/Apply Kinetic Grasp")]
+        public static void ApplyKineticGrasp()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var settings = AssetDatabase.LoadAssetAtPath<KineticGraspSettings>(Root + "/Data/KineticGrasp.asset");
+            if (!settings)
+            {
+                settings = ScriptableObject.CreateInstance<KineticGraspSettings>();
+                AssetDatabase.CreateAsset(settings, Root + "/Data/KineticGrasp.asset");
+            }
+            var prefabRoot = PrefabUtility.LoadPrefabContents(PrefabPath);
+            try
+            {
+                var motor = prefabRoot.GetComponentInChildren<CharacterMotor>();
+                var targeting = prefabRoot.GetComponentInChildren<ContextualTargeting>();
+                var vector = prefabRoot.GetComponentInChildren<KineticVectorAbility>();
+                var input = prefabRoot.GetComponentInChildren<LocalPlayerInput>();
+                if (!motor || !targeting || !vector || !input) throw new InvalidOperationException("Player prefab is missing the accepted power/input foundation.");
+                var grasp = motor.GetComponent<KineticGraspAbility>() ?? motor.gameObject.AddComponent<KineticGraspAbility>();
+                Set(grasp, "settings", settings); Set(grasp, "targeting", targeting);
+                var vitality = motor.GetComponent<PlayerVitality>(); if (vitality) Set(grasp, "vitality", vitality);
+                Set(vector, "grasp", grasp); Set(input, "graspAbility", grasp);
+                var feedback = prefabRoot.GetComponentInChildren<KineticGraspFeedback>();
+                if (!feedback)
+                {
+                    var go = new GameObject("Kinetic grasp feedback"); go.transform.SetParent(prefabRoot.transform, false);
+                    Line(go, AssetDatabase.LoadAssetAtPath<Material>(Root + "/Materials/Kinetic feedback.mat"), .04f);
+                    feedback = go.AddComponent<KineticGraspFeedback>();
+                }
+                var muzzle = motor.transform.Find("Force origin");
+                if (!muzzle) throw new InvalidOperationException("Player prefab is missing Force origin.");
+                Set(feedback, "ability", grasp); Set(feedback, "muzzle", muzzle);
+                PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
+            }
+            finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
+            ApplyGraspables(ScenePath);
+            ApplyGraspables(UrbanScenePath);
+            AssetDatabase.SaveAssets();
+            Debug.Log("Kinetic Grasp applied to the accepted player prefab and production scenes.");
+        }
+
+        private static void ApplyGraspables(string scenePath)
+        {
+            var scene = EditorSceneManager.OpenScene(scenePath);
+            foreach (var target in Object.FindObjectsByType<PhysicalTarget>(FindObjectsInactive.Include, FindObjectsSortMode.None))
+            {
+                if (target.GetComponentInParent<CharacterMotor>() || target.GetComponentInParent<CivilianPresence>() || target.GetComponentInParent<HostileCombatant>()) continue;
+                if (!target.GetComponent<Graspable>()) target.gameObject.AddComponent<Graspable>();
+            }
+            EditorSceneManager.SaveScene(scene);
+        }
         [MenuItem("Nexus/Production/Add First Combat Encounter")]
         public static void AddFirstCombatEncounter()
         {
@@ -37,7 +89,7 @@ namespace Nexus.Gameplay.Editor
             var friction = AssetDatabase.LoadAssetAtPath<PhysicsMaterial>(Root + "/Data/PlaygroundContact.physicMaterial");
             var cover = Box("Encounter reusable cover", new Vector3(8, 1.1f, 10), new Vector3(2.4f, 2.2f, .4f), steel, root);
             var coverBody = cover.AddComponent<Rigidbody>(); ConfigureBody(coverBody, 7); coverBody.constraints = RigidbodyConstraints.FreezeAll;
-            cover.AddComponent<PhysicalTarget>(); cover.AddComponent<ImpactBarrier>();
+            cover.AddComponent<PhysicalTarget>(); cover.AddComponent<Graspable>(); cover.AddComponent<ImpactBarrier>();
             var prop = Crate("Encounter kinetic prop", new Vector3(12, .85f, 11), 3, shell, accent, root, friction);
             var hostile = new GameObject("Greybox hostile"); hostile.transform.SetParent(root); hostile.transform.position = new Vector3(10, .05f, 16);
             hostile.transform.rotation = Quaternion.Euler(0, 180, 0);
@@ -78,6 +130,8 @@ namespace Nexus.Gameplay.Editor
                 var prefabMotor = prefabRoot.GetComponentInChildren<CharacterMotor>();
                 if (!prefabMotor.GetComponent<DamageReceiver>()) prefabMotor.gameObject.AddComponent<DamageReceiver>();
                 if (!prefabMotor.GetComponent<PlayerVitality>()) prefabMotor.gameObject.AddComponent<PlayerVitality>();
+                var prefabGrasp = prefabMotor.GetComponent<KineticGraspAbility>();
+                if (prefabGrasp) Set(prefabGrasp, "vitality", prefabMotor.GetComponent<PlayerVitality>());
                 PrefabUtility.SaveAsPrefabAsset(prefabRoot, PrefabPath);
             }
             finally { PrefabUtility.UnloadPrefabContents(prefabRoot); }
@@ -93,12 +147,12 @@ namespace Nexus.Gameplay.Editor
             Box("Landing drop platform", new Vector3(17, 1.8f, -10), new Vector3(3, 3.6f, 3), steel, root);
             var barrier = Box("Releasable combat cover", new Vector3(-4, 1.1f, 10), new Vector3(3, 2.2f, .3f), accent, root);
             var barrierBody = barrier.AddComponent<Rigidbody>(); ConfigureBody(barrierBody, 4); barrierBody.constraints = RigidbodyConstraints.FreezeAll;
-            barrier.AddComponent<PhysicalTarget>(); barrier.AddComponent<ImpactBarrier>();
+            barrier.AddComponent<PhysicalTarget>(); barrier.AddComponent<Graspable>(); barrier.AddComponent<ImpactBarrier>();
             var projectile = GameObject.CreatePrimitive(PrimitiveType.Sphere); projectile.name = "Training hazard template";
             projectile.transform.SetParent(root); projectile.transform.localScale = Vector3.one * .55f;
             projectile.GetComponent<Renderer>().sharedMaterial = accent;
             var projectileBody = projectile.AddComponent<Rigidbody>(); ConfigureBody(projectileBody, 1); projectileBody.useGravity = false;
-            projectile.AddComponent<PhysicalTarget>(); var hazard = projectile.AddComponent<TrainingHazard>(); projectile.SetActive(false);
+            projectile.AddComponent<PhysicalTarget>(); projectile.AddComponent<Graspable>(); var hazard = projectile.AddComponent<TrainingHazard>(); projectile.SetActive(false);
             var sentinel = new GameObject("Training sentinel"); sentinel.transform.SetParent(root); sentinel.transform.position = new Vector3(-4, .05f, 15);
             var shape = sentinel.AddComponent<CapsuleCollider>(); shape.center = Vector3.up; shape.height = 2; shape.radius = .45f;
             var body = sentinel.AddComponent<Rigidbody>(); ConfigureBody(body, 8); body.constraints = RigidbodyConstraints.FreezeRotation;
@@ -127,6 +181,7 @@ namespace Nexus.Gameplay.Editor
             var cameraSettings = Config<CameraSettings>("Camera");
             var targetingSettings = Config<TargetingSettings>("Targeting");
             var kineticSettings = Config<KineticVectorSettings>("KineticVector");
+            var graspSettings = Config<KineticGraspSettings>("KineticGrasp");
             var concrete = Material("Concrete", new Color(.32f, .36f, .4f));
             var plaster = Material("Warm panels", new Color(.62f, .59f, .5f));
             var steel = Material("Steel", new Color(.1f, .17f, .22f));
@@ -175,7 +230,7 @@ namespace Nexus.Gameplay.Editor
             Box("Exposed core", Vector3.zero, new Vector3(.5f, 1.5f, .5f), steel, broken.transform, false);
             broken.SetActive(false);
             var stateVisual = cabinet.gameObject.AddComponent<DamageStateVisual>(); Set(stateVisual, "intact", intact); Set(stateVisual, "damaged", broken);
-            CreateRig(movement, cameraSettings, targetingSettings, kineticSettings, suit, steel, accent, pulse);
+            CreateRig(movement, cameraSettings, targetingSettings, kineticSettings, graspSettings, suit, steel, accent, pulse);
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = EditorBuildSettings.scenes.Concat(new[] { new EditorBuildSettingsScene(ScenePath, true) }).ToArray();
             AssetDatabase.SaveAssets();
@@ -183,7 +238,7 @@ namespace Nexus.Gameplay.Editor
         }
 
         private static void CreateRig(MovementSettings movement, CameraSettings cameraSettings, TargetingSettings targetingSettings,
-            KineticVectorSettings kineticSettings, Material suit, Material steel, Material accent, Material pulse)
+            KineticVectorSettings kineticSettings, KineticGraspSettings graspSettings, Material suit, Material steel, Material accent, Material pulse)
         {
             var rig = new GameObject("Superhuman player rig");
             var player = new GameObject("Player"); player.transform.SetParent(rig.transform); player.transform.position = new Vector3(0, .05f, -10);
@@ -199,13 +254,18 @@ namespace Nexus.Gameplay.Editor
             var muzzle = new GameObject("Force origin").transform; muzzle.SetParent(player.transform, false); muzzle.localPosition = new Vector3(.45f, 1.35f, .25f);
             var targeting = player.AddComponent<ContextualTargeting>(); Set(targeting, "settings", targetingSettings); Set(targeting, "view", view); Set(targeting, "origin", muzzle); Set(targeting, "owner", player.transform);
             var ability = player.AddComponent<KineticVectorAbility>(); Set(ability, "settings", kineticSettings); Set(ability, "targeting", targeting); Set(ability, "motor", motor);
+            var grasp = player.AddComponent<KineticGraspAbility>(); Set(grasp, "settings", graspSettings); Set(grasp, "targeting", targeting);
+            Set(ability, "grasp", grasp);
             var input = player.AddComponent<LocalPlayerInput>();
             Set(input, "inputTemplate", AssetDatabase.LoadAssetAtPath<InputActionAsset>("Assets/Nexus/Input/NexusInput.inputactions"));
             Set(input, "motor", motor); Set(input, "orbit", orbit); Set(input, "primaryAbility", ability); Set(input, "targeting", targeting);
+            Set(input, "graspAbility", grasp);
             var reticle = new GameObject("Centre reticle"); reticle.transform.SetParent(rig.transform);
             var targetFeedback = reticle.AddComponent<TargetFeedback>(); Set(targetFeedback, "targeting", targeting); Set(targetFeedback, "view", view);
             var beam = new GameObject("Kinetic impulse feedback"); beam.transform.SetParent(rig.transform); Line(beam, pulse, .055f);
             var feedback = beam.AddComponent<KineticFeedback>(); Set(feedback, "ability", ability); Set(feedback, "muzzle", muzzle);
+            var graspBeam = new GameObject("Kinetic grasp feedback"); graspBeam.transform.SetParent(rig.transform); Line(graspBeam, pulse, .04f);
+            var graspFeedback = graspBeam.AddComponent<KineticGraspFeedback>(); Set(graspFeedback, "ability", grasp); Set(graspFeedback, "muzzle", muzzle);
             var prefab = PrefabUtility.SaveAsPrefabAssetAndConnect(rig, PrefabPath, InteractionMode.AutomatedAction);
             if (!prefab) throw new InvalidOperationException("Player rig prefab could not be saved.");
         }
@@ -223,7 +283,7 @@ namespace Nexus.Gameplay.Editor
         {
             var go = new GameObject(name); go.transform.SetParent(parent); go.transform.position = position;
             var collider = go.AddComponent<BoxCollider>(); collider.size = new Vector3(1.8f, 1.6f, 1.4f); collider.sharedMaterial = friction;
-            var body = go.AddComponent<Rigidbody>(); ConfigureBody(body, mass); go.AddComponent<PhysicalTarget>();
+            var body = go.AddComponent<Rigidbody>(); ConfigureBody(body, mass); go.AddComponent<PhysicalTarget>(); go.AddComponent<Graspable>();
             var visual = new GameObject("Intact casing").transform; visual.SetParent(go.transform, false);
             for (int i = 0; i < 4; i++) Box("Casing slat", new Vector3(0, -.5f + i * .32f, 0), new Vector3(1.8f, .25f, 1.4f), panel, visual, false);
             foreach (float x in new[] { -.65f, .65f })

@@ -445,6 +445,7 @@ GameObject:
   - component: {fileID: 30823375}
   - component: {fileID: 30823374}
   - component: {fileID: 30823373}
+  - component: {fileID: 30823379}
   m_Layer: 0
   m_Name: Damageable power cabinet
   m_TagString: Untagged
@@ -572,6 +573,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.6, z: 1.4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &30823379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 30823371}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &34339636
 GameObject:
   m_ObjectHideFlags: 0
@@ -2699,6 +2712,7 @@ GameObject:
   - component: {fileID: 517491832}
   - component: {fileID: 517491831}
   - component: {fileID: 517491830}
+  - component: {fileID: 517491836}
   m_Layer: 0
   m_Name: Reactive training mannequin
   m_TagString: Untagged
@@ -2827,6 +2841,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &517491836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 517491828}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &522360266
 GameObject:
   m_ObjectHideFlags: 0
@@ -2976,6 +3002,7 @@ MonoBehaviour:
   visual: {fileID: 1302653997}
   telegraph: {fileID: 1322305232}
   stateLabel: {fileID: 1285413816}
+  urbanPresentation: 0
   detectionRange: 14
   attackRange: 11
   preferredRange: 7
@@ -5130,6 +5157,7 @@ GameObject:
   - component: {fileID: 840905001}
   - component: {fileID: 840905000}
   - component: {fileID: 840904999}
+  - component: {fileID: 840905002}
   m_Layer: 0
   m_Name: Movable pallet
   m_TagString: Untagged
@@ -5214,6 +5242,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.6, z: 1.4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &840905002
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 840904997}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &867640029
 GameObject:
   m_ObjectHideFlags: 0
@@ -5229,6 +5269,7 @@ GameObject:
   - component: {fileID: 867640033}
   - component: {fileID: 867640032}
   - component: {fileID: 867640031}
+  - component: {fileID: 867640037}
   m_Layer: 0
   m_Name: Training sentinel
   m_TagString: Untagged
@@ -5369,6 +5410,18 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0, y: 1, z: 0}
+--- !u!114 &867640037
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 867640029}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &893187471
 GameObject:
   m_ObjectHideFlags: 0
@@ -5564,6 +5617,7 @@ GameObject:
   - component: {fileID: 975889858}
   - component: {fileID: 975889857}
   - component: {fileID: 975889856}
+  - component: {fileID: 975889863}
   m_Layer: 0
   m_Name: Training hazard template
   m_TagString: Untagged
@@ -5719,6 +5773,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 124105452}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &975889863
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 975889855}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &988391913
 GameObject:
   m_ObjectHideFlags: 0
@@ -6144,6 +6210,7 @@ GameObject:
   - component: {fileID: 1108430401}
   - component: {fileID: 1108430403}
   - component: {fileID: 1108430402}
+  - component: {fileID: 1108430408}
   m_Layer: 0
   m_Name: Encounter reusable cover
   m_TagString: Untagged
@@ -6297,6 +6364,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1909115865}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1108430408
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1108430400}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1115472253
 GameObject:
   m_ObjectHideFlags: 0
@@ -7002,6 +7081,7 @@ GameObject:
   - component: {fileID: 1242895327}
   - component: {fileID: 1242895325}
   - component: {fileID: 1242895326}
+  - component: {fileID: 1242895329}
   m_Layer: 0
   m_Name: Encounter kinetic prop
   m_TagString: Untagged
@@ -7086,6 +7166,18 @@ Transform:
   - {fileID: 1564379830}
   m_Father: {fileID: 1909115865}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1242895329
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1242895324}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1273496594
 GameObject:
   m_ObjectHideFlags: 0
@@ -10260,6 +10352,7 @@ GameObject:
   - component: {fileID: 1854717629}
   - component: {fileID: 1854717628}
   - component: {fileID: 1854717627}
+  - component: {fileID: 1854717633}
   m_Layer: 0
   m_Name: Releasable combat cover
   m_TagString: Untagged
@@ -10413,6 +10506,18 @@ MeshFilter:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1854717625}
   m_Mesh: {fileID: 10202, guid: 0000000000000000e000000000000000, type: 0}
+--- !u!114 &1854717633
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1854717625}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1871566573
 GameObject:
   m_ObjectHideFlags: 0
@@ -10605,6 +10710,7 @@ GameObject:
   - component: {fileID: 1879391514}
   - component: {fileID: 1879391513}
   - component: {fileID: 1879391512}
+  - component: {fileID: 1879391515}
   m_Layer: 0
   m_Name: Heavy equipment
   m_TagString: Untagged
@@ -10689,6 +10795,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.6, z: 1.4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1879391515
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1879391510}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1879503362
 GameObject:
   m_ObjectHideFlags: 0
@@ -10740,6 +10858,7 @@ GameObject:
   - component: {fileID: 1906493234}
   - component: {fileID: 1906493233}
   - component: {fileID: 1906493232}
+  - component: {fileID: 1906493235}
   m_Layer: 0
   m_Name: Light pallet
   m_TagString: Untagged
@@ -10824,6 +10943,18 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.8, y: 1.6, z: 1.4}
   m_Center: {x: 0, y: 0, z: 0}
+--- !u!114 &1906493235
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1906493230}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 141ec6e60873e2e48867236367562c44, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.Interaction.Graspable
 --- !u!1 &1909115864
 GameObject:
   m_ObjectHideFlags: 0
