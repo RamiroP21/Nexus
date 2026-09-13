@@ -43,8 +43,11 @@ namespace Nexus.Gameplay.Editor
             var player = Object.FindFirstObjectByType<PlayerVitality>();
             var crisis1 = Object.FindFirstObjectByType<UrbanBlockSituation>();
             var director = district.gameObject.AddComponent<DistrictSessionDirector>();
+            district.gameObject.AddComponent<DistrictAuthorityHostBootstrap>();
+            var authority = district.gameObject.AddComponent<DistrictAuthorityBridge>();
             Set(director, "crisis1", crisis1); Set(director, "crisis2", emergency); Set(director, "player", player);
             Set(director, "marketZone", market); Set(director, "residentialZone", residential); Set(director, "serviceZone", service);
+            Set(director, "authority", authority);
             var residents = Object.FindObjectsByType<CivilianPresence>(FindObjectsSortMode.None);
             SetArray(director, "resetCivilians", residents);
             Set(crisis1, "district", director);
@@ -62,6 +65,21 @@ namespace Nexus.Gameplay.Editor
             var scene = EditorSceneManager.OpenScene(DistrictScenePath, OpenSceneMode.Single);
             DisableLegacyBlockBoundaries();
             EditorSceneManager.SaveScene(scene);
+        }
+
+        [MenuItem("Nexus/Production/Repair Persistent District Authority")]
+        public static void RepairDistrict01Authority()
+        {
+            if (EditorApplication.isPlaying) throw new InvalidOperationException("Author outside Play Mode.");
+            var scene = EditorSceneManager.OpenScene(DistrictScenePath, OpenSceneMode.Single);
+            var director = Object.FindFirstObjectByType<DistrictSessionDirector>();
+            if (!director) throw new InvalidOperationException("DistrictSessionDirector is missing.");
+            var root = director.transform;
+            var authority = root.GetComponent<DistrictAuthorityBridge>() ?? root.gameObject.AddComponent<DistrictAuthorityBridge>();
+            if (!root.GetComponent<DistrictAuthorityHostBootstrap>()) root.gameObject.AddComponent<DistrictAuthorityHostBootstrap>();
+            Set(director, "authority", authority);
+            EditorSceneManager.SaveScene(scene);
+            AssetDatabase.SaveAssets();
         }
 
         private static void DisableLegacyBlockBoundaries()

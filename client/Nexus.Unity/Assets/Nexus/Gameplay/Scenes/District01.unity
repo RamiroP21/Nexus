@@ -14800,6 +14800,8 @@ GameObject:
   m_Component:
   - component: {fileID: 1429425587}
   - component: {fileID: 1429425586}
+  - component: {fileID: 1429425589}
+  - component: {fileID: 1429425588}
   m_Layer: 0
   m_Name: Persistent district session
   m_TagString: Untagged
@@ -14834,6 +14836,7 @@ MonoBehaviour:
   serviceZone: {fileID: 461899515}
   crisis2AftermathSeconds: 6
   crisis2ActivationRadius: 12
+  authority: {fileID: 1429425589}
 --- !u!4 &1429425587
 Transform:
   m_ObjectHideFlags: 0
@@ -14853,6 +14856,40 @@ Transform:
   - {fileID: 653912750}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1429425588
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429425585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b5d8c447094b73d468f8e8357fa7a11e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.World.DistrictAuthorityHostBootstrap
+  launchOnStart: 1
+  executableOverride:
+  port: 43101
+--- !u!114 &1429425589
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429425585}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6f8a1d3d8e1640a2b0a2bb1e8c9f1d23, type: 3}
+  m_Name:
+  m_EditorClassIdentifier: Nexus.Gameplay::Nexus.Gameplay.World.DistrictAuthorityBridge
+  connectOnStart: 1
+  host: 127.0.0.1
+  port: 43101
+  connectTimeoutMilliseconds: 3000
+  seed: 123456789
+  clientId: unity-district01
+  maxMessagesPerFrame: 32
 --- !u!1 &1433095344
 GameObject:
   m_ObjectHideFlags: 0

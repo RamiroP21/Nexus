@@ -31,6 +31,11 @@ namespace Nexus.Gameplay.Tests
             crisis1 = Object.FindFirstObjectByType<UrbanBlockSituation>();
             Assert.That(district && emergency && crisis1, Is.True, "District01 authoring must be applied.");
             Object.FindFirstObjectByType<LocalPlayerInput>().enabled = false;
+            // The development bootstrap launches the external Host asynchronously;
+            // allow bounded reconnect attempts to cover process startup latency.
+            for (int i = 0; i < 100 && !district.AuthorityReady; i++)
+                yield return new WaitForSecondsRealtime(0.05f);
+            Assert.That(district.AuthorityReady, Is.True, "District01 must connect to the authoritative Host before playtest assertions.");
             yield return null;
         }
 
@@ -47,12 +52,14 @@ namespace Nexus.Gameplay.Tests
             Assert.That(GameObject.Find("Market to service street"), Is.Not.Null);
             Assert.That(GameObject.Find("Residential vault shortcut"), Is.Not.Null);
             Assert.That(GameObject.Find("Service mantle shortcut"), Is.Not.Null);
-            yield return null;
+            for (int i = 0; i < 120 && !district.State.Zone(DistrictZone.Market).Visited; i++) yield return null;
             Assert.That(district.State.Zone(DistrictZone.Market).Visited, Is.True);
             var motor = Object.FindFirstObjectByType<CharacterMotor>();
-            motor.ResetMotion(new Vector3(28, .05f, 7)); Physics.SyncTransforms(); yield return null;
+            motor.ResetMotion(new Vector3(28, .05f, 7)); Physics.SyncTransforms();
+            for (int i = 0; i < 120 && !district.State.Zone(DistrictZone.Residential).Visited; i++) yield return null;
             Assert.That(district.State.Zone(DistrictZone.Residential).Visited, Is.True);
-            motor.ResetMotion(new Vector3(-28, .05f, -8)); Physics.SyncTransforms(); yield return null;
+            motor.ResetMotion(new Vector3(-28, .05f, -8)); Physics.SyncTransforms();
+            for (int i = 0; i < 120 && !district.State.Zone(DistrictZone.Service).Visited; i++) yield return null;
             Assert.That(district.State.Zone(DistrictZone.Service).Visited, Is.True);
             Capture("district-overview", new Vector3(42, 30, -40), new Vector3(0, 0, 0));
             Capture("district-zone-b", new Vector3(34, 12, 5), new Vector3(27, 1, 7));
@@ -131,6 +138,7 @@ namespace Nexus.Gameplay.Tests
             pressure.Tick(40);
             crisis1.Hostile.GetComponent<DamageReceiver>().Receive(new Damage(100)); crisis1.Evaluate();
             Assert.That(crisis1.Phase, Is.EqualTo(UrbanBlockPhase.Aftermath));
+            for (int i = 0; i < 300 && district.State.Crisis1 != DistrictCrisisState.Failed; i++) yield return null;
             yield return null;
             Assert.That(district.State.Crisis1, Is.EqualTo(DistrictCrisisState.Failed));
             Assert.That(district.State.ServiceDegraded, Is.True);

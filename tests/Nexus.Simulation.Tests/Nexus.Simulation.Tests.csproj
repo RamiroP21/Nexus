@@ -18,6 +18,7 @@
     <ProjectReference Include="..\..\src\Nexus.Core\Nexus.Core.csproj" />
     <ProjectReference Include="..\..\src\Nexus.Contracts\Nexus.Contracts.csproj" />
     <ProjectReference Include="..\..\src\Nexus.Simulation\Nexus.Simulation.csproj" />
+    <ProjectReference Include="..\..\src\Nexus.Host\Nexus.Host.csproj" />
   </ItemGroup>
 
 </Project>

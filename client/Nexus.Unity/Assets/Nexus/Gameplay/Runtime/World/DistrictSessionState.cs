@@ -45,6 +45,50 @@ namespace Nexus.Gameplay.World
             (Crisis1 == DistrictCrisisState.Resolved || Crisis1 == DistrictCrisisState.Failed) && AftermathSeconds >= interval;
         public void ObserveCrisis2(DistrictCrisisState state, bool routeBlocked)
         { Crisis2 = state; Zone(DistrictZone.Service).RouteBlocked = routeBlocked; }
+
+        // Applies a server snapshot to the client read model. This is a
+        // presentation reconciliation hook; it never advances a clock or
+        // derives a new outcome locally.
+        public void ApplyAuthoritative(DistrictAuthorityReplica authority)
+        {
+            if (authority == null || !authority.HasSnapshot) return;
+            Crisis1 = ParseCrisis(authority.Crisis1);
+            Crisis2 = ParseCrisis(authority.Crisis2);
+            InfrastructureOutcome = string.Equals(authority.Infrastructure, "Damaged", System.StringComparison.Ordinal)
+                ? PressureOutcome.Failed : string.Equals(authority.Infrastructure, "Stable", System.StringComparison.Ordinal)
+                    ? PressureOutcome.Pending : PressureOutcome.Resolved;
+            ResidentOutcome = ParseCivilianOutcome(authority);
+            foreach (DistrictZone zone in System.Enum.GetValues(typeof(DistrictZone)))
+            {
+                string id = StableZoneId(zone);
+                if (authority.TryGetZone(id, out DistrictAuthorityWireZone snapshot))
+                {
+                    Zone(zone).Visited = snapshot.visited;
+                    Zone(zone).RouteBlocked = string.Equals(authority.Route, "Blocked", System.StringComparison.Ordinal)
+                        && zone == DistrictZone.Service;
+                    Zone(zone).Injured = string.Equals(snapshot.civilianState, "Incapacitated", System.StringComparison.Ordinal) ? 1 : 0;
+                    Zone(zone).Sheltered = string.Equals(snapshot.civilianState, "Sheltered", System.StringComparison.Ordinal) ? 1 : 0;
+                }
+            }
+        }
+
+        public static string StableZoneId(DistrictZone zone) => zone == DistrictZone.Market
+            ? "district01.zone.a" : zone == DistrictZone.Residential ? "district01.zone.b" : "district01.zone.c";
+
+        private static DistrictCrisisState ParseCrisis(string value) =>
+            string.Equals(value, "Active", System.StringComparison.Ordinal) ? DistrictCrisisState.Active :
+            string.Equals(value, "Resolved", System.StringComparison.Ordinal) ? DistrictCrisisState.Resolved :
+            string.Equals(value, "Failed", System.StringComparison.Ordinal) ? DistrictCrisisState.Failed : DistrictCrisisState.Dormant;
+
+        private static PressureOutcome ParseCivilianOutcome(DistrictAuthorityReplica authority)
+        {
+            foreach (DistrictAuthorityWireZone zone in authority.Zones)
+            {
+                if (string.Equals(zone.civilianState, "Incapacitated", System.StringComparison.Ordinal)) return PressureOutcome.Failed;
+                if (string.Equals(zone.civilianState, "Sheltered", System.StringComparison.Ordinal)) return PressureOutcome.Resolved;
+            }
+            return PressureOutcome.Pending;
+        }
         public void Reset()
         {
             Crisis1 = Crisis2 = DistrictCrisisState.Dormant;

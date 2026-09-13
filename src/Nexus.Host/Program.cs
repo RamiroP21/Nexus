@@ -1,16 +1,29 @@
 using System.Globalization;
+using System.Text.Json;
+using Nexus.Simulation;
 using Nexus.Diagnostics;
 
 namespace Nexus.Host;
 
 internal static class Program
 {
+    private static readonly JsonSerializerOptions ReplayJsonOptions = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() }
+    };
     private const ulong DefaultSeed = 123_456_789UL;
     private const int DefaultTickRate = 60;
     private const ulong DefaultTickCount = 10_000UL;
 
     public static int Main(string[] args)
     {
+        if (args.Length > 0 && string.Equals(args[0], "--district-host", StringComparison.Ordinal))
+        {
+            int port = args.Length > 1 && int.TryParse(args[1], out int parsedPort) ? parsedPort : 0;
+            return RunDistrictHost(port);
+        }
+        if (args.Length > 1 && string.Equals(args[0], "--replay", StringComparison.Ordinal))
+            return RunReplay(args[1]);
         if (args.Length > 0)
         {
             return EcsDemoConsole.Run(args);
@@ -39,6 +52,44 @@ internal static class Program
         Console.WriteLine(isDeterministic ? "DETERMINISM: PASS" : "DETERMINISM: FAIL");
 
         return isDeterministic ? 0 : 1;
+    }
+
+    private static int RunDistrictHost(int port)
+    {
+        using var stop = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, eventArgs) => { eventArgs.Cancel = true; stop.Cancel(); };
+        var host = new DistrictAuthorityHost(port);
+        try
+        {
+            Task run = host.RunAsync(stop.Token);
+            while (!run.Wait(100)) { }
+            run.GetAwaiter().GetResult();
+            return 0;
+        }
+        catch (OperationCanceledException) { return 0; }
+        finally { host.DisposeAsync().AsTask().GetAwaiter().GetResult(); }
+    }
+
+    private static int RunReplay(string path)
+    {
+        try
+        {
+            string json = File.ReadAllText(path);
+            DistrictReplayDocument? replay = JsonSerializer.Deserialize<DistrictReplayDocument>(json, ReplayJsonOptions);
+            if (replay is null) throw new InvalidDataException("Replay is empty.");
+            DistrictAuthoritySession session = DistrictReplay.Run(replay);
+            Console.WriteLine($"REPLAY: PASS");
+            Console.WriteLine($"Seed: {session.Seed}");
+            Console.WriteLine($"Commands: {replay.Commands.Count}");
+            Console.WriteLine($"Final tick: {session.Tick}");
+            Console.WriteLine($"Final authoritative hash: {session.ComputeStateHash()}");
+            return 0;
+        }
+        catch (Exception ex) when (ex is IOException or JsonException or InvalidDataException)
+        {
+            Console.Error.WriteLine($"REPLAY: FAIL ({ex.Message})");
+            return 1;
+        }
     }
 
     private static void PrintHeader(DeterminismReport report)

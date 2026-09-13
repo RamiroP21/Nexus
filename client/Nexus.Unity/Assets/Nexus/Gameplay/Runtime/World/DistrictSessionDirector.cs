@@ -1,10 +1,11 @@
+using System;
 using Nexus.Gameplay.Combat;
 using UnityEngine;
 
 namespace Nexus.Gameplay.World
 {
-    // Local presentation orchestrator. DistrictSessionState owns session memory;
-    // this component only observes authored actors and reconciles their presentation.
+    // Local presentation orchestrator. DistrictSessionState is the Host-backed
+    // read model; this component observes authored actors and reconciles presentation.
     public sealed class DistrictSessionDirector : MonoBehaviour
     {
         [SerializeField] private UrbanBlockSituation crisis1;
@@ -12,35 +13,85 @@ namespace Nexus.Gameplay.World
         [SerializeField] private PlayerVitality player;
         [SerializeField] private CivilianPresence[] resetCivilians;
         [SerializeField] private Transform marketZone, residentialZone, serviceZone;
-        [SerializeField, Min(0)] private float crisis2AftermathSeconds = 6;
         [SerializeField, Min(1)] private float crisis2ActivationRadius = 12;
+        [SerializeField] private DistrictAuthorityBridge authority;
         private DistrictSessionState state;
         private readonly int[] injuredByZone = new int[3];
         private readonly int[] shelteredByZone = new int[3];
+        private readonly bool[] zoneIntentsSent = new bool[3];
+        private bool crisis1StartSent, crisis1OutcomeSent, crisis2StartSent, crisis2OutcomeSent;
         public DistrictSessionState State => state;
         public DistrictCargoEmergency Crisis2 => crisis2;
+        public bool AuthorityReady => authority && authority.IsAuthorityReady;
         private void Awake()
         {
             if (!crisis1 || !crisis2 || !player || !marketZone || !residentialZone || !serviceZone)
             { Debug.LogError("DistrictSessionDirector requires explicit crisis, player and zone references.", this); enabled = false; return; }
+            if (!authority)
+            { Debug.LogError("DistrictSessionDirector requires a DistrictAuthorityBridge; local semantic fallback is disabled.", this); enabled = false; return; }
             state = new DistrictSessionState();
             state.Reset();
         }
         private void Update()
         {
             if (!isActiveAndEnabled) return;
-            ObserveCrisis1();
-            MarkVisitedZone();
-            ObserveDistrictPopulation();
-            state.Tick(Time.deltaTime);
-            if (state.CanStartCrisis2(crisis2AftermathSeconds) && Vector3.Distance(player.transform.position, crisis2.transform.position) <= crisis2ActivationRadius)
-            {
-                crisis2.Begin(state.ServiceDegraded);
-                state.ObserveCrisis2(DistrictCrisisState.Active, crisis2.RouteBlocked);
-            }
+            UpdateAuthoritative();
+        }
+
+        private void UpdateAuthoritative()
+        {
+            if (!authority.IsAuthorityReady) return;
+            state.ApplyAuthoritative(authority.Replica);
+            ObserveAuthorityFacts();
+            ReconcileCrisis2();
             bool nearby = crisis2.State == DistrictCrisisState.Active && Vector3.Distance(player.transform.position, crisis2.transform.position) <= crisis2ActivationRadius;
             crisis2.Tick(Time.deltaTime, nearby);
-            if (crisis2.State != DistrictCrisisState.Dormant) state.ObserveCrisis2(crisis2.State, crisis2.RouteBlocked);
+            if (!crisis2OutcomeSent && crisis2.State == DistrictCrisisState.Resolved)
+                crisis2OutcomeSent = authority.TryResolveCrisis2();
+            else if (!crisis2OutcomeSent && crisis2.State == DistrictCrisisState.Failed)
+                crisis2OutcomeSent = authority.TryFailCrisis2();
+            if (!string.Equals(authority.Replica.Crisis2, "Active", StringComparison.Ordinal)) crisis2OutcomeSent = false;
+            state.ApplyAuthoritative(authority.Replica);
+        }
+
+        private void ObserveAuthorityFacts()
+        {
+            UrbanBlockPhase phase = crisis1.Phase;
+            if ((phase == UrbanBlockPhase.Warning || phase == UrbanBlockPhase.Incident || phase == UrbanBlockPhase.Aftermath)
+                && string.Equals(authority.Replica.Crisis1, "Pending", StringComparison.Ordinal) && !crisis1StartSent)
+                crisis1StartSent = authority.TryStartCrisis1();
+            if (!string.Equals(authority.Replica.Crisis1, "Pending", StringComparison.Ordinal)) crisis1StartSent = false;
+            if (phase == UrbanBlockPhase.Aftermath
+                && (string.Equals(authority.Replica.Phase, "Warning", StringComparison.Ordinal)
+                    || string.Equals(authority.Replica.Phase, "Incident", StringComparison.Ordinal))
+                && string.Equals(authority.Replica.Crisis1, "Active", StringComparison.Ordinal))
+            {
+                var pressure = crisis1.CompoundPressure;
+                bool failed = pressure && (pressure.Civilian == PressureOutcome.Failed || pressure.Infrastructure == PressureOutcome.Failed);
+                foreach (var civilian in crisis1.Civilians) if (civilian && civilian.Harmed) failed = true;
+                if (!crisis1OutcomeSent)
+                {
+                    crisis1OutcomeSent = failed ? authority.TryFailCrisis1() : authority.TryResolveCrisis1();
+                }
+            }
+            if (!string.Equals(authority.Replica.Crisis1, "Active", StringComparison.Ordinal)) crisis1OutcomeSent = false;
+            float[] distances = { DistanceOnPlane(player.transform.position, marketZone.position), DistanceOnPlane(player.transform.position, residentialZone.position), DistanceOnPlane(player.transform.position, serviceZone.position) };
+            for (int i = 0; i < distances.Length; i++)
+            {
+                if (zoneIntentsSent[i] || distances[i] > crisis2ActivationRadius * 1.5f) continue;
+                zoneIntentsSent[i] = authority.TryObserveZone(DistrictSessionState.StableZoneId((DistrictZone)i));
+            }
+            if (string.Equals(authority.Replica.Phase, "Aftermath", StringComparison.Ordinal)
+                && string.Equals(authority.Replica.Crisis2, "Pending", StringComparison.Ordinal)
+                && Vector3.Distance(player.transform.position, crisis2.transform.position) <= crisis2ActivationRadius && !crisis2StartSent)
+                crisis2StartSent = authority.TryStartCrisis2();
+            if (!string.Equals(authority.Replica.Crisis2, "Pending", StringComparison.Ordinal)) crisis2StartSent = false;
+        }
+
+        private void ReconcileCrisis2()
+        {
+            if (string.Equals(authority.Replica.Crisis2, "Active", StringComparison.Ordinal) && crisis2.State == DistrictCrisisState.Dormant)
+                crisis2.Begin(authority.Replica.Crisis2InheritedDamage);
         }
         private void ObserveCrisis1()
         {
@@ -95,6 +146,9 @@ namespace Nexus.Gameplay.World
             if (resetCivilians != null)
                 foreach (var civilian in resetCivilians) if (civilian) civilian.ResetCivilian();
             state.Reset();
+            for (int i = 0; i < zoneIntentsSent.Length; i++) zoneIntentsSent[i] = false;
+            crisis1StartSent = crisis1OutcomeSent = crisis2StartSent = crisis2OutcomeSent = false;
+            if (authority) authority.ResetAuthoritativeSession();
         }
         private void OnGUI()
         {
@@ -106,6 +160,11 @@ namespace Nexus.Gameplay.World
                 $"DISTRICT SESSION | C1 {state.Crisis1} | C2 {state.Crisis2} | aftermath {state.AftermathSeconds:0.0}s\n" +
                 $"ZONES M:{market.Visited}/{market.RouteBlocked} R:{residential.Visited} S:{service.Visited}/{service.RouteBlocked}\n" +
                 $"MEMORY resident:{state.ResidentOutcome} infrastructure:{state.InfrastructureOutcome} | C2 emergency:{crisis2.State} elapsed:{crisis2.Elapsed:0.0}/{crisis2.Deadline:0.0} inherited:{crisis2.InheritedDamage}");
+            if (authority)
+                GUI.Label(new Rect(20, Screen.height - 315, 900, 95),
+                    $"AUTHORITY {authority.ConnectionState} | session:{authority.Replica.SessionId ?? "-"} seed:{authority.Replica.Seed} tick:{authority.Replica.Tick} seq:{authority.Replica.LastServerSequence}\n" +
+                    $"phase:{authority.Replica.Phase} c1:{authority.Replica.Crisis1} c2:{authority.Replica.Crisis2} route:{authority.Replica.Route} infra:{authority.Replica.Infrastructure}\n" +
+                    $"hash:{authority.Replica.StateHash ?? "-"} | rejected:{authority.RejectedCommandCount} | {authority.LastDiagnostic}");
         }
     }
 }
