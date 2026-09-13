@@ -18,6 +18,7 @@ namespace Nexus.Gameplay.World
         [SerializeField, Min(.1f)] private float incidentRadius = 5;
         [SerializeField] private CompoundCrisisPressure compoundPressure;
         [SerializeField, Min(.1f)] private float warningSeconds = 4;
+        [SerializeField] private DistrictSessionDirector district;
         private float warningRemaining;
         public CompoundCrisisPressure CompoundPressure => compoundPressure;
         private Vector3[] positions;
@@ -119,6 +120,7 @@ namespace Nexus.Gameplay.World
             player.ResetTraining(); hostile.ResetCombatant(); hostile.SetIncidentHold(true);
             foreach (var civil in civilians) civil.ResetCivilian();
             if (compoundPressure) compoundPressure.ResetPressure();
+            if (district) district.ResetDistrictState();
             warningRemaining = 0;
             Phase = UrbanBlockPhase.Calm; State = UrbanSituationState.Quiet; Physics.SyncTransforms(); Evaluate();
         }
