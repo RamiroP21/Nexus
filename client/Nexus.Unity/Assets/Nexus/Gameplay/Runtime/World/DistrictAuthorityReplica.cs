@@ -11,10 +11,12 @@ namespace Nexus.Gameplay.World
 
         private readonly Dictionary<string, DistrictAuthorityWireZone> zones =
             new Dictionary<string, DistrictAuthorityWireZone>(StringComparer.Ordinal);
+        private readonly List<DistrictAuthorityWireMemory> memories = new List<DistrictAuthorityWireMemory>();
         private ulong lastEventSequence;
 
         public bool HasSnapshot { get; private set; }
         public string SessionId { get; private set; }
+        public string CampaignId { get; private set; } = string.Empty;
         public ulong Seed { get; private set; }
         public ulong Tick { get; private set; }
         public ulong LastServerSequence { get; private set; }
@@ -25,11 +27,15 @@ namespace Nexus.Gameplay.World
         public string Route { get; private set; } = "Open";
         public bool Crisis2InheritedDamage { get; private set; }
         public ulong Crisis2DeadlineTick { get; private set; }
+        public ulong SaveRevision { get; private set; }
+        public string SaveStatus { get; private set; } = "ephemeral";
+        public string SaveFormatVersion { get; private set; } = "Nexus.CampaignSave.v1";
         public string StateHash { get; private set; } = string.Empty;
         public string LastEventType { get; private set; } = string.Empty;
         public string LastError { get; private set; } = string.Empty;
 
         public IReadOnlyCollection<DistrictAuthorityWireZone> Zones => zones.Values;
+        public IReadOnlyList<DistrictAuthorityWireMemory> Memories => memories;
 
         public bool ApplySnapshot(DistrictAuthorityWireSnapshot snapshot, bool force = false)
         {
@@ -39,6 +45,7 @@ namespace Nexus.Gameplay.World
 
             bool newSession = !HasSnapshot || !string.Equals(SessionId, snapshot.sessionId, StringComparison.Ordinal) || force;
             SessionId = snapshot.sessionId;
+            CampaignId = ValueOr(snapshot.campaignId, string.Empty);
             Seed = snapshot.seed;
             Tick = snapshot.tick;
             LastServerSequence = snapshot.serverSequence;
@@ -49,11 +56,18 @@ namespace Nexus.Gameplay.World
             Route = ValueOr(snapshot.route, "Open");
             Crisis2InheritedDamage = snapshot.crisis2InheritedDamage;
             Crisis2DeadlineTick = snapshot.crisis2DeadlineTick;
+            SaveRevision = snapshot.saveRevision;
+            SaveStatus = ValueOr(snapshot.saveStatus, "ephemeral");
+            SaveFormatVersion = ValueOr(snapshot.saveFormatVersion, "Nexus.CampaignSave.v1");
             StateHash = ValueOr(snapshot.stateHash, string.Empty);
             zones.Clear();
             if (snapshot.zones != null)
                 foreach (DistrictAuthorityWireZone zone in snapshot.zones)
                     if (zone != null && !string.IsNullOrEmpty(zone.id)) zones[zone.id] = zone;
+            memories.Clear();
+            if (snapshot.memories != null)
+                foreach (DistrictAuthorityWireMemory memory in snapshot.memories)
+                    if (memory != null && !string.IsNullOrEmpty(memory.memoryId)) memories.Add(memory);
             HasSnapshot = true;
             if (newSession) lastEventSequence = 0;
             return true;

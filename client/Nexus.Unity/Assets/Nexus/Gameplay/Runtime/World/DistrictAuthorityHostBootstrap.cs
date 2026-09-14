@@ -46,10 +46,19 @@ namespace Nexus.Gameplay.World
 
             try
             {
+                string arguments = "--district-host " + port;
+                // Batch-mode regression runs must be isolated per Play Mode
+                // fixture; normal editor/player sessions use the durable
+                // development slot selected by the Host.
+                if (Application.isBatchMode)
+                {
+                    string testSaveDirectory = Path.Combine(Path.GetTempPath(), "Nexus", "UnityTests", Guid.NewGuid().ToString("N"));
+                    arguments += " --save-directory \"" + testSaveDirectory + "\"";
+                }
                 ownedProcess = Process.Start(new ProcessStartInfo
                 {
                     FileName = executable,
-                    Arguments = "--district-host " + port,
+                    Arguments = arguments,
                     WorkingDirectory = Path.GetDirectoryName(executable),
                     UseShellExecute = false,
                     CreateNoWindow = true,

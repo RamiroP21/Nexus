@@ -137,6 +137,31 @@ namespace Nexus.Gameplay.World
         public bool TryResolveCrisis2() => TryCommand("ResolveCrisis2", "district01.crisis.2");
         public bool TryFailCrisis2() => TryCommand("FailCrisis2", "district01.crisis.2");
 
+        public bool ContinueCampaign()
+        {
+            if (transport == null || !transport.IsConnected) return false;
+            return Send(new DistrictAuthorityWireMessage
+            {
+                protocolVersion = DistrictAuthorityReplica.ProtocolVersion,
+                messageType = "ContinueCampaign", seed = seed, clientId = clientId
+            });
+        }
+
+        public bool NewCampaign()
+        {
+            if (transport == null || !transport.IsConnected) return false;
+            resetPending = true;
+            return Send(new DistrictAuthorityWireMessage
+            {
+                protocolVersion = DistrictAuthorityReplica.ProtocolVersion,
+                messageType = "NewCampaign", seed = seed, clientId = clientId
+            });
+        }
+
+        public bool SaveCampaign() => TryLifecycleCommand("SaveCampaign");
+
+        public bool ShutdownHost() => TryLifecycleCommand("ShutdownHost");
+
         public bool ResetAuthoritativeSession()
         {
             resetPending = true;
@@ -165,10 +190,25 @@ namespace Nexus.Gameplay.World
                 protocolVersion = DistrictAuthorityReplica.ProtocolVersion,
                 messageType = "ClientCommand", sessionId = Replica.SessionId, clientId = clientId,
                 clientSequence = ++clientSequence,
-                commandId = clientId + ":" + clientSequence.ToString(),
+                // Session-scoped IDs avoid colliding with durable receipts after a Host restart.
+                commandId = clientId + ":" + Replica.SessionId + ":" + clientSequence.ToString(),
                 commandType = commandType, entityId = entityId
             };
             return Send(command);
+        }
+
+        private bool TryLifecycleCommand(string messageType)
+        {
+            if (!IsAuthorityReady)
+            {
+                LastDiagnostic = "Authority unavailable; lifecycle request was not sent.";
+                return false;
+            }
+            return Send(new DistrictAuthorityWireMessage
+            {
+                protocolVersion = DistrictAuthorityReplica.ProtocolVersion,
+                messageType = messageType, sessionId = Replica.SessionId, clientId = clientId
+            });
         }
 
         private bool Send(DistrictAuthorityWireMessage message)
@@ -192,7 +232,7 @@ namespace Nexus.Gameplay.World
             switch (message.messageType)
             {
                 case "ServerHello":
-                    if (!helloSent) { helloSent = true; sessionRequestSent = Send(new DistrictAuthorityWireMessage { protocolVersion = DistrictAuthorityReplica.ProtocolVersion, messageType = "CreateSession", seed = seed }); }
+                    if (!helloSent) { helloSent = true; sessionRequestSent = ContinueCampaign(); }
                     break;
                 case "SessionStarted":
                     ApplySnapshot(message.snapshot, true);
@@ -214,6 +254,11 @@ namespace Nexus.Gameplay.World
                     LastDiagnostic = (message.errorCode ?? "rejected") + ": " + (message.errorMessage ?? "Authority rejected message.");
                     if (message.snapshot != null) ApplySnapshot(message.snapshot, resetPending);
                     resetPending = false;
+                    break;
+                case "HostShuttingDown":
+                    ApplySnapshot(message.snapshot, true);
+                    LastDiagnostic = "Authority host flushed campaign and is shutting down.";
+                    SetConnectionState(DistrictAuthorityConnectionState.Disconnected);
                     break;
             }
         }

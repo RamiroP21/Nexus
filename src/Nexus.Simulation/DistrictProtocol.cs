@@ -19,6 +19,11 @@ public static class DistrictMessageTypes
     public const string ProtocolError = "ProtocolError";
     public const string Ping = "Ping";
     public const string Pong = "Pong";
+    public const string ContinueCampaign = "ContinueCampaign";
+    public const string NewCampaign = "NewCampaign";
+    public const string SaveCampaign = "SaveCampaign";
+    public const string ShutdownHost = "ShutdownHost";
+    public const string HostShuttingDown = "HostShuttingDown";
 }
 
 public sealed record DistrictWireMessage
@@ -26,6 +31,7 @@ public sealed record DistrictWireMessage
     public string ProtocolVersion { get; init; } = DistrictAuthorityProtocol.Version;
     public string MessageType { get; init; } = "";
     public string? SessionId { get; init; }
+    public string? CampaignId { get; init; }
     public string? ClientId { get; init; }
     public ulong ClientSequence { get; init; }
     public string? CommandId { get; init; }
@@ -62,7 +68,9 @@ public static class DistrictProtocolCodec
             if (reader.TokenType == JsonTokenType.Null) return null;
             if (reader.TokenType != JsonTokenType.String) throw new JsonException("CommandType must be a string or null.");
             string? value = reader.GetString();
-            return string.IsNullOrEmpty(value) ? null : Enum.Parse<DistrictCommandType>(value, true);
+            if (string.IsNullOrEmpty(value)) return null;
+            if (Enum.TryParse(value, true, out DistrictCommandType parsed) && Enum.IsDefined(parsed)) return parsed;
+            throw new JsonException("Unknown command type.");
         }
 
         public override void Write(Utf8JsonWriter writer, DistrictCommandType? value, JsonSerializerOptions options) =>

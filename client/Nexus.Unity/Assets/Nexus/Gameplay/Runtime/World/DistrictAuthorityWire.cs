@@ -17,6 +17,7 @@ namespace Nexus.Gameplay.World
         public string entityId;
         public ulong targetTick;
         public ulong seed;
+        public string campaignId;
         public DistrictAuthorityWireEvent @event;
         public DistrictAuthorityWireSnapshot snapshot;
         public string errorCode;
@@ -50,6 +51,11 @@ namespace Nexus.Gameplay.World
         public bool crisis2InheritedDamage;
         public ulong crisis2DeadlineTick;
         public DistrictAuthorityWireZone[] zones;
+        public string campaignId;
+        public ulong saveRevision;
+        public string saveStatus;
+        public string saveFormatVersion;
+        public DistrictAuthorityWireMemory[] memories;
         public string stateHash;
     }
 
@@ -59,5 +65,16 @@ namespace Nexus.Gameplay.World
         public string id;
         public bool visited;
         public string civilianState;
+    }
+
+    [Serializable]
+    public sealed class DistrictAuthorityWireMemory
+    {
+        public string memoryId;
+        public ulong simulationTick;
+        public string districtId;
+        public string kind;
+        public string subjectId;
+        public string value;
     }
 }

@@ -161,10 +161,11 @@ namespace Nexus.Gameplay.World
                 $"ZONES M:{market.Visited}/{market.RouteBlocked} R:{residential.Visited} S:{service.Visited}/{service.RouteBlocked}\n" +
                 $"MEMORY resident:{state.ResidentOutcome} infrastructure:{state.InfrastructureOutcome} | C2 emergency:{crisis2.State} elapsed:{crisis2.Elapsed:0.0}/{crisis2.Deadline:0.0} inherited:{crisis2.InheritedDamage}");
             if (authority)
-                GUI.Label(new Rect(20, Screen.height - 315, 900, 95),
-                    $"AUTHORITY {authority.ConnectionState} | session:{authority.Replica.SessionId ?? "-"} seed:{authority.Replica.Seed} tick:{authority.Replica.Tick} seq:{authority.Replica.LastServerSequence}\n" +
+                GUI.Label(new Rect(20, Screen.height - 340, 1100, 120),
+                    $"AUTHORITY {authority.ConnectionState} | campaign:{authority.Replica.CampaignId ?? "-"} session:{authority.Replica.SessionId ?? "-"}\n" +
+                    $"format:{authority.Replica.SaveFormatVersion} revision:{authority.Replica.SaveRevision} persistence:{authority.Replica.SaveStatus} | seed:{authority.Replica.Seed} tick:{authority.Replica.Tick} seq:{authority.Replica.LastServerSequence}\n" +
                     $"phase:{authority.Replica.Phase} c1:{authority.Replica.Crisis1} c2:{authority.Replica.Crisis2} route:{authority.Replica.Route} infra:{authority.Replica.Infrastructure}\n" +
-                    $"hash:{authority.Replica.StateHash ?? "-"} | rejected:{authority.RejectedCommandCount} | {authority.LastDiagnostic}");
+                    $"hash:{authority.Replica.StateHash ?? "-"} | memories:{authority.Replica.Memories.Count} | rejected:{authority.RejectedCommandCount} | {authority.LastDiagnostic}");
         }
     }
 }

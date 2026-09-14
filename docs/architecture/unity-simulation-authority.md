@@ -34,4 +34,4 @@ F8 sends an authoritative reset and then restores Unity physical fixtures. F9 re
 
 ## Future layers (documented, not implemented)
 
-Layer 1 (this milestone) is semantic consequences and district state. Future layers may add semantic combat resolution, NPC/faction/world simulation, and campaign/save authority. Rigidbody simulation and local presentation do not need to move wholesale to the Host.
+Layer 1 (Milestone 05) is semantic consequences and district state; Milestone 06 adds the durable campaign contract documented in [campaign persistence](campaign-persistence.md). Future layers may add semantic combat resolution and NPC/faction/world simulation. Rigidbody simulation and local presentation do not need to move wholesale to the Host.

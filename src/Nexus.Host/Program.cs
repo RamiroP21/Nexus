@@ -20,7 +20,9 @@ internal static class Program
         if (args.Length > 0 && string.Equals(args[0], "--district-host", StringComparison.Ordinal))
         {
             int port = args.Length > 1 && int.TryParse(args[1], out int parsedPort) ? parsedPort : 0;
-            return RunDistrictHost(port);
+            int directoryIndex = Array.IndexOf(args, "--save-directory");
+            string saveDirectory = directoryIndex >= 0 && directoryIndex + 1 < args.Length ? args[directoryIndex + 1] : CampaignSaveRepository.DefaultDirectory;
+            return RunDistrictHost(port, saveDirectory);
         }
         if (args.Length > 1 && string.Equals(args[0], "--replay", StringComparison.Ordinal))
             return RunReplay(args[1]);
@@ -54,11 +56,11 @@ internal static class Program
         return isDeterministic ? 0 : 1;
     }
 
-    private static int RunDistrictHost(int port)
+    private static int RunDistrictHost(int port, string saveDirectory)
     {
         using var stop = new CancellationTokenSource();
         Console.CancelKeyPress += (_, eventArgs) => { eventArgs.Cancel = true; stop.Cancel(); };
-        var host = new DistrictAuthorityHost(port);
+        var host = new DistrictAuthorityHost(port, saveDirectory);
         try
         {
             Task run = host.RunAsync(stop.Token);
